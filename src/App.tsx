@@ -5,27 +5,48 @@ import {
   INITIAL_NOTIFICATIONS, 
   INITIAL_CHATS, 
   INITIAL_FRIEND_REQUESTS, 
-  INITIAL_CONTACTS 
+  INITIAL_CONTACTS,
+  INITIAL_TODOS
 } from './initialData';
-import { ChatThread, Story, Notification, UserProfile, Message } from './types';
+import { ChatThread, Story, Notification, UserProfile, Message, CalendarTodo } from './types';
 
 // Importing views
 import HomeView from './components/HomeView';
 import ChatView from './components/ChatView';
 import ContactsView from './components/ContactsView';
 import SettingsView from './components/SettingsView';
+import StoriesView from './components/StoriesView';
+import CalendarTodoView from './components/CalendarTodoView';
+import GeminiChatView from './components/GeminiChatView';
 
 export default function App() {
   // Navigation tabs
   const [activeTab, setActiveTab] = useState<string>('home');
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   
   // App States
-  const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    const saved = localStorage.getItem('cyber_user_profile');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return INITIAL_PROFILE;
+      }
+    }
+    return INITIAL_PROFILE;
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('cyber_user_profile', JSON.stringify(profile));
+  }, [profile]);
+
   const [stories, setStories] = useState<Story[]>(INITIAL_STORIES);
   const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
   const [threads, setThreads] = useState<ChatThread[]>(INITIAL_CHATS);
   const [friendRequests, setFriendRequests] = useState(INITIAL_FRIEND_REQUESTS);
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
+  const [todos, setTodos] = useState<CalendarTodo[]>(INITIAL_TODOS);
   
   const [activeThreadId, setActiveThreadId] = useState<string>('t1');
   
@@ -46,14 +67,16 @@ export default function App() {
     setActiveTab('chat');
   };
 
-  const handleSendMessage = (threadId: string, text: string, isIncoming = false) => {
+  const handleSendMessage = (threadId: string, text: string, isIncoming = false, sticker?: string, file?: Message['file']) => {
     const newMessage: Message = {
       id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       sender: isIncoming ? threads.find(t => t.id === threadId)?.name || 'Operator' : profile.name,
       text: text,
       timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       isMine: !isIncoming,
-      isRead: true
+      isRead: true,
+      sticker: sticker,
+      file: file
     };
 
     setThreads(prev => prev.map(t => {
@@ -62,12 +85,29 @@ export default function App() {
         return {
           ...t,
           messages: updatedMessages,
-          lastMessage: text,
+          lastMessage: sticker ? `[Nhãn dán / Sticker]` : (file ? `[Tệp tin / ${file.name}]` : text),
           unreadCount: isIncoming ? t.unreadCount + 1 : 0
         };
       }
       return t;
     }));
+  };
+
+  const handleAddTodo = (newTodo: CalendarTodo) => {
+    setTodos(prev => [...prev, newTodo]);
+  };
+
+  const handleToggleTodo = (todoId: string) => {
+    setTodos(prev => prev.map(t => {
+      if (t.id === todoId) {
+        return { ...t, completed: !t.completed };
+      }
+      return t;
+    }));
+  };
+
+  const handleDeleteTodo = (todoId: string) => {
+    setTodos(prev => prev.filter(t => t.id !== todoId));
   };
 
   const handleAddStory = () => {
@@ -273,6 +313,48 @@ export default function App() {
             <span className="text-[8px] mt-1 uppercase font-bold tracking-wider">Contacts</span>
           </button>
 
+          {/* Stories Tab */}
+          <button 
+            id="tab-btn-stories"
+            onClick={() => { setActiveTab('stories'); setShowNotifications(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+              activeTab === 'stories' 
+                ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
+                : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
+            }`}
+          >
+            <span className="material-symbols-outlined font-semibold">auto_stories</span>
+            <span className="text-[8px] mt-1.5 uppercase font-bold tracking-wider">Stories</span>
+          </button>
+
+          {/* Calendar Tab */}
+          <button 
+            id="tab-btn-calendar"
+            onClick={() => { setActiveTab('calendar'); setShowNotifications(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+              activeTab === 'calendar' 
+                ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
+                : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
+            }`}
+          >
+            <span className="material-symbols-outlined font-semibold">calendar_month</span>
+            <span className="text-[8px] mt-1 uppercase font-bold tracking-wider">Calendar</span>
+          </button>
+
+          {/* Gemini AI / Assistant Tab */}
+          <button 
+            id="tab-btn-gemini"
+            onClick={() => { setActiveTab('gemini'); setShowNotifications(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+              activeTab === 'gemini' 
+                ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_rgba(0,212,255,0.3)]' 
+                : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
+            }`}
+          >
+            <span className="material-symbols-outlined font-semibold text-neon-cyan">smart_toy</span>
+            <span className="text-[8px] mt-1 uppercase font-bold tracking-wider text-neon-cyan">Assistant</span>
+          </button>
+
           {/* Settings Tab */}
           <button 
             id="tab-btn-settings"
@@ -333,6 +415,24 @@ export default function App() {
               className={`pb-1 transition-all ${activeTab === 'contacts' ? 'text-neon-cyan border-b-2 border-neon-cyan' : 'text-on-surface-variant hover:text-hot-pink'}`}
             >
               CONTACTS
+            </button>
+            <button 
+              onClick={() => { setActiveTab('stories'); setShowNotifications(false); }} 
+              className={`pb-1 transition-all ${activeTab === 'stories' ? 'text-neon-cyan border-b-2 border-neon-cyan' : 'text-on-surface-variant hover:text-hot-pink'}`}
+            >
+              STORIES
+            </button>
+            <button 
+              onClick={() => { setActiveTab('calendar'); setShowNotifications(false); }} 
+              className={`pb-1 transition-all ${activeTab === 'calendar' ? 'text-neon-cyan border-b-2 border-neon-cyan' : 'text-on-surface-variant hover:text-hot-pink'}`}
+            >
+              CALENDAR
+            </button>
+            <button 
+              onClick={() => { setActiveTab('gemini'); setShowNotifications(false); }} 
+              className={`pb-1 transition-all ${activeTab === 'gemini' ? 'text-neon-cyan border-b-2 border-neon-cyan' : 'text-on-surface-variant hover:text-hot-pink'}`}
+            >
+              ASSISTANT
             </button>
             <button 
               onClick={() => { setActiveTab('settings'); setShowNotifications(false); }} 
@@ -401,16 +501,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Floating Action Button (FAB) only visible on non-chat screen */}
-      {activeTab !== 'chat' && (
-        <button 
-          id="global-fab-btn"
-          onClick={() => { setActiveTab('chat'); }}
-          className="fixed bottom-8 right-8 w-14 h-14 bg-neon-green text-black flex items-center justify-center shadow-[0_0_20px_rgba(0,255,136,0.5)] hover:scale-110 active:scale-95 transition-all z-50 cursor-pointer"
-        >
-          <span className="material-symbols-outlined font-bold text-3xl">add_comment</span>
-        </button>
-      )}
+
 
       {/* Profile Overlay Card dialog */}
       {showProfileCard && (
@@ -470,6 +561,7 @@ export default function App() {
             onSelectThread={handleSelectThread}
             onAddStory={handleAddStory}
             onNavigateTab={(tab) => setActiveTab(tab)}
+            onSelectStory={(storyId) => setSelectedStoryId(storyId)}
           />
         )}
 
@@ -481,6 +573,18 @@ export default function App() {
             onSendMessage={handleSendMessage}
             userName={profile.name}
             onLeaveThread={handleLeaveThread}
+          />
+        )}
+
+        {activeTab === 'stories' && (
+          <StoriesView 
+            stories={stories}
+            onAddStory={(newStory) => setStories(prev => [newStory, ...prev])}
+            profile={profile}
+            selectedStoryId={selectedStoryId}
+            setSelectedStoryId={setSelectedStoryId}
+            onSendMessage={handleSendMessage}
+            threads={threads}
           />
         )}
 
@@ -502,6 +606,19 @@ export default function App() {
             profile={profile}
             onUpdateProfile={(newProfile) => setProfile(newProfile)}
           />
+        )}
+
+        {activeTab === 'calendar' && (
+          <CalendarTodoView 
+            todos={todos}
+            onAddTodo={handleAddTodo}
+            onToggleTodo={handleToggleTodo}
+            onDeleteTodo={handleDeleteTodo}
+          />
+        )}
+
+        {activeTab === 'gemini' && (
+          <GeminiChatView />
         )}
       </main>
     </div>

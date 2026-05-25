@@ -1,4 +1,4 @@
-import { ChatThread, Story, Notification, UserProfile, FriendRequest } from './types';
+import { ChatThread, Story, Notification, UserProfile, FriendRequest, CalendarTodo } from './types';
 
 export const INITIAL_PROFILE: UserProfile = {
   name: 'Bùi Hữu Vũ',
@@ -335,3 +335,69 @@ export const INITIAL_CONTACTS = [
     avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBembgBvAm28Q3TF6yLwjxsjLlYavp3GCWBc2NRr8nJ-op1iSlMxMIRH6paC_LlnLpFExNVFTxTSzcXekvj_A1WxV_npzwUvvLrOLfIeXRwyEG4KVLGpsAZI71Y_WCg9dlXeyd1zV2DaRFBirvWJjnnOa-bzV_bbpgoFvd5bmbYsx2SLlGQ2Xa5Vp7_sTdjNJsypTzWrAidwrS1NupZWkqb6eoZmGwokwqKY48BHCvbaTrd5x7PghBEf1yvkE5MUGUquC2tF37e3gF0'
   }
 ];
+
+export const INITIAL_TODOS: CalendarTodo[] = [
+  {
+    id: 'todo-1',
+    title: 'Họp tối ưu bảo mật Node Delta',
+    completed: false,
+    dateStr: '2026-05-25',
+    priority: 'high',
+    time: '14:00',
+    description: 'Báo cáo chi tiết lỗ hổng zero-day lớp thứ 3 đã được phát hiện.'
+  },
+  {
+    id: 'todo-2',
+    title: 'Review tài liệu API mới',
+    completed: false,
+    dateStr: '2026-05-25',
+    priority: 'medium',
+    time: '18:30',
+    description: 'Xét duyệt tài liệu kết nối bảo mật cổng 0x4B.'
+  },
+  {
+    id: 'todo-3',
+    title: 'Kiểm tra tường lửa máy chủ',
+    completed: true,
+    dateStr: '2026-05-25',
+    priority: 'high',
+    time: '08:00',
+    description: 'Chạy thử kịch bản khai thác mô phỏng.'
+  },
+  {
+    id: 'todo-4',
+    title: 'Bàn giao mã nguồn bản Alpha',
+    completed: false,
+    dateStr: '2026-05-26',
+    priority: 'high',
+    time: '09:00',
+    description: 'Gửi code hoàn thiện của mô-đun Story Media lên hệ thống.'
+  },
+  {
+    id: 'todo-5',
+    title: 'Thử nghiệm quét virus tự động',
+    completed: false,
+    dateStr: '2026-05-26',
+    priority: 'low',
+    time: '16:00',
+    description: 'Đánh giá khả năng dọn dẹp các tiến trình lạ.'
+  },
+  {
+    id: 'todo-6',
+    title: 'Bảo trì máy chủ cơ sở dữ liệu',
+    completed: false,
+    dateStr: '2026-05-28',
+    priority: 'medium',
+    time: '23:00',
+    description: 'Khởi động lại node backup và đồng bộ hóa nhật ký giao dịch.'
+  },
+  {
+    id: 'todo-7',
+    title: 'Tổng kết hiệu quả bảo mật',
+    completed: false,
+    dateStr: '2026-05-30',
+    priority: 'low',
+    description: 'Lập báo cáo tổng quan hằng tháng gửi hội đồng quản lý.'
+  }
+];
+

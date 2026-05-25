@@ -37,6 +37,7 @@ export default function ContactsView({
   const [showAddGroupForm, setShowAddGroupForm] = useState<boolean>(false);
   const [newGroupName, setNewGroupName] = useState<string>('');
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
+  const [groupUidSearch, setGroupUidSearch] = useState<string>('');
 
   const handleToggleGroupMember = (contactName: string) => {
     if (selectedGroupMembers.includes(contactName)) {
@@ -168,8 +169,9 @@ export default function ContactsView({
                     )}
                   </div>
                   <div className="ml-4 flex-1 min-w-0">
-                    <p className="text-xs font-bold text-on-surface group-hover:text-neon-green transition-colors truncate">
+                    <p className="text-xs font-bold text-on-surface group-hover:text-neon-green transition-colors truncate flex items-center flex-wrap gap-1.5">
                       {contact.name.toUpperCase()}
+                      <span className="text-[8px] font-mono font-bold text-neon-cyan px-1 bg-neon-cyan/10 border border-neon-cyan/20 select-all">UID: {contact.id.toUpperCase()}</span>
                     </p>
                     <p className="text-[10px] text-on-surface-variant uppercase font-mono truncate tracking-tight opacity-75">
                       {contact.status}
@@ -244,36 +246,73 @@ export default function ContactsView({
 
               <div className="space-y-2">
                 <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant block font-mono">CHỌN THÀNH VIÊN BAN ĐẦU ({selectedGroupMembers.length})</label>
+                
+                {/* Search contact selection by UID or Name */}
+                <div className="relative group mb-2.5">
+                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-neon-green text-[12px]">search</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={groupUidSearch}
+                    onChange={(e) => setGroupUidSearch(e.target.value)}
+                    placeholder="TÌM THEO UID (C1, C2...) HOẶC TÊN THÀNH VIÊN..."
+                    className="w-full bg-black border border-border-default pl-8 pr-12 py-1.5 text-[9px] font-mono text-neon-green outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all"
+                  />
+                  {groupUidSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setGroupUidSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-hot-pink font-bold font-mono hover:underline cursor-pointer"
+                    >
+                      XÓA
+                    </button>
+                  )}
+                </div>
+
                 {contacts.length === 0 ? (
                   <div className="text-[9px] text-on-surface-variant/50 italic p-3 text-center border border-dashed border-border-default">
                     Không tìm thấy liên hệ nào để thêm vào nhóm
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto custom-scrollbar border border-border-default/50 p-2 bg-black/40">
-                    {contacts.map((contact) => {
-                      const isChecked = selectedGroupMembers.includes(contact.name);
-                      return (
-                        <div 
-                          key={contact.id}
-                          onClick={() => handleToggleGroupMember(contact.name)}
-                          className={`flex items-center gap-2 p-1.5 border rounded cursor-pointer transition-colors ${
-                            isChecked 
-                              ? 'bg-neon-green/10 border-neon-green text-neon-green' 
-                              : 'bg-transparent border-border-default/40 hover:bg-white/5 text-white/70 hover:text-white'
-                          }`}
-                        >
-                          <input 
-                            type="checkbox" 
-                            checked={isChecked}
-                            onChange={() => {}} // handled by click
-                            className="rounded border-border-default text-neon-green focus:ring-0 accent-neon-green cursor-pointer"
-                          />
-                          <span className="text-[10px] font-mono truncate uppercase">{contact.name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                ) : (() => {
+                  const filtered = contacts.filter(contact => 
+                    contact.id.toLowerCase().includes(groupUidSearch.toLowerCase()) ||
+                    contact.name.toLowerCase().includes(groupUidSearch.toLowerCase())
+                  );
+                  return filtered.length === 0 ? (
+                    <div className="text-[9px] text-hot-pink bg-hot-pink/5 border border-dashed border-hot-pink/30 p-3 text-center font-mono uppercase">
+                      [ Không tìm thấy user có UID/tên: "{groupUidSearch}" ]
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto custom-scrollbar border border-border-default/50 p-2 bg-black/40">
+                      {filtered.map((contact) => {
+                        const isChecked = selectedGroupMembers.includes(contact.name);
+                        return (
+                          <div 
+                            key={contact.id}
+                            onClick={() => handleToggleGroupMember(contact.name)}
+                            className={`flex items-center gap-2 p-1.5 border rounded cursor-pointer transition-colors ${
+                              isChecked 
+                                ? 'bg-neon-green/10 border-neon-green text-neon-green' 
+                                : 'bg-transparent border-border-default/40 hover:bg-white/5 text-white/70 hover:text-white'
+                            }`}
+                          >
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => {}} // handled by click
+                              className="rounded border-border-default text-neon-green focus:ring-0 accent-neon-green cursor-pointer"
+                            />
+                            <div className="flex flex-col min-w-0 text-left">
+                              <span className="text-[10px] font-mono truncate uppercase leading-tight">{contact.name}</span>
+                              <span className="text-[7.5px] font-mono text-neon-cyan leading-none mt-0.5 opacity-85">UID: {contact.id.toUpperCase()}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="flex gap-2">

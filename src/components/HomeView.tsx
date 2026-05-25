@@ -9,6 +9,7 @@ interface HomeViewProps {
   onSelectThread: (threadId: string) => void;
   onAddStory: () => void;
   onNavigateTab: (tab: string) => void;
+  onSelectStory: (storyId: string) => void;
 }
 
 export default function HomeView({
@@ -18,7 +19,8 @@ export default function HomeView({
   profile,
   onSelectThread,
   onAddStory,
-  onNavigateTab
+  onNavigateTab,
+  onSelectStory
 }: HomeViewProps) {
   const [logTime, setLogTime] = useState<string>('12_NEW_UPDATES');
 
@@ -55,7 +57,7 @@ export default function HomeView({
           {/* User Add Story */}
           <div 
             id="add-story-btn"
-            onClick={onAddStory}
+            onClick={() => onNavigateTab('stories')}
             className="flex-shrink-0 group cursor-pointer flex flex-col items-center"
           >
             <div className="w-16 h-16 border-2 border-dashed border-border-default flex items-center justify-center group-hover:border-neon-cyan hover:shadow-[0_0_10px_rgba(0,212,255,0.4)] transition-all">
@@ -66,11 +68,19 @@ export default function HomeView({
 
           {/* Dynamic Stories */}
           {stories.map((story) => (
-            <div key={story.id} id={`story-${story.id}`} className="flex-shrink-0 group cursor-pointer flex flex-col items-center">
+            <div 
+              key={story.id} 
+              id={`story-${story.id}`} 
+              onClick={() => {
+                onSelectStory(story.id);
+                onNavigateTab('stories');
+              }}
+              className="flex-shrink-0 group cursor-pointer flex flex-col items-center"
+            >
               <div className="w-16 h-16 p-0.5 border-2 border-neon-green group-hover:border-neon-cyan group-hover:shadow-[0_0_15px_rgba(0,255,136,0.6)] transition-all duration-300">
                 <img 
                   src={story.avatarUrl} 
-                  alt={story.sender}
+                   alt={story.sender}
                   className="w-full h-full object-cover bg-surface-container"
                   referrerPolicy="no-referrer"
                 />

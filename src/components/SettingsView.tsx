@@ -146,7 +146,7 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
 
       {/* Toast alert overlay */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 bg-[#0E0E13] border-2 border-neon-green text-neon-green px-5 py-3 font-mono text-xs uppercase shadow-[0_0_20px_rgba(0,255,136,0.5)] z-[110] animate-bounce">
+        <div className="fixed top-24 right-6 bg-[#0E0E13] border-2 border-neon-green text-neon-green px-5 py-3 font-mono text-xs uppercase shadow-[0_0_20px_rgba(0,255,136,0.5)] z-[110] animate-bounce">
            [ {toastMessage} ]
         </div>
       )}

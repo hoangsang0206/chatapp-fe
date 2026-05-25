@@ -1,6 +1,9 @@
 {
   "name": "Cyber Chat Hub",
   "description": "Một ứng dụng trò chuyện giao diện Cyberpunk bảo mật, tích hợp bản tin stories, kênh chat mã hóa, quản lý danh bạ và cấu hình hệ thống.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

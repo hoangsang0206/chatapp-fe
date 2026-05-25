@@ -5,6 +5,13 @@ export interface Message {
   timestamp: string;
   isMine: boolean;
   isRead?: boolean;
+  sticker?: string;
+  file?: {
+    name: string;
+    url?: string;
+    type: 'file' | 'image';
+    size?: string;
+  };
 }
 
 export interface ChatThread {
@@ -26,6 +33,9 @@ export interface Story {
   seed: string;
   isMine: boolean;
   avatarUrl: string;
+  imageUrl?: string;
+  caption?: string;
+  timestamp?: string;
 }
 
 export interface Notification {
@@ -49,4 +59,14 @@ export interface FriendRequest {
   name: string;
   subText: string;
   avatar: string;
+}
+
+export interface CalendarTodo {
+  id: string;
+  title: string;
+  completed: boolean;
+  dateStr: string; // YYYY-MM-DD
+  priority: 'low' | 'medium' | 'high';
+  time?: string; // e.g. "14:00"
+  description?: string;
 }
