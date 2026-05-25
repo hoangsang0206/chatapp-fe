@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FriendRequest } from '../types';
+import { FriendRequest, ChatThread } from '../types';
 
 interface Contact {
   id: string;
@@ -17,6 +17,8 @@ interface ContactsViewProps {
   onRejectRequest: (id: string) => void;
   onAddContact: (name: string, status: string, online: boolean) => void;
   onStartChat: (contactName: string) => void;
+  groupThreads: ChatThread[];
+  onCreateGroupChat: (name: string, membersName: string[]) => void;
 }
 
 export default function ContactsView({
@@ -25,11 +27,33 @@ export default function ContactsView({
   onAcceptRequest,
   onRejectRequest,
   onAddContact,
-  onStartChat
+  onStartChat,
+  groupThreads,
+  onCreateGroupChat
 }: ContactsViewProps) {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [newFriendName, setNewFriendName] = useState<string>('');
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
+  const [showAddGroupForm, setShowAddGroupForm] = useState<boolean>(false);
+  const [newGroupName, setNewGroupName] = useState<string>('');
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
+
+  const handleToggleGroupMember = (contactName: string) => {
+    if (selectedGroupMembers.includes(contactName)) {
+      setSelectedGroupMembers(prev => prev.filter(name => name !== contactName));
+    } else {
+      setSelectedGroupMembers(prev => [...prev, contactName]);
+    }
+  };
+
+  const handleCreateGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+    onCreateGroupChat(newGroupName.trim(), selectedGroupMembers);
+    setNewGroupName('');
+    setSelectedGroupMembers([]);
+    setShowAddGroupForm(false);
+  };
 
   // Filter contacts by search query
   const filteredContacts = contacts.filter((c) =>
@@ -184,56 +208,155 @@ export default function ContactsView({
         <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between border-b border-border-default/80 pb-2.5">
             <h2 className="text-neon-cyan font-bold text-xs tracking-widest uppercase">
-              DANH SÁCH NHÓM CỘNG ĐỒNG
+              DANH SÁCH NHÓM CỘNG ĐỒNG ({groupThreads.length})
             </h2>
-            <span className="text-[9px] text-on-surface-variant/40 font-mono">NODE ACTIVE // SECURE</span>
+            <div className="flex items-center gap-3">
+              <button 
+                id="toggle-add-group-btn"
+                onClick={() => {
+                  setShowAddGroupForm(!showAddGroupForm);
+                  setShowAddForm(false);
+                }}
+                className="flex items-center gap-1.5 text-[10px] text-neon-green border border-neon-green/30 px-2.5 py-1 font-bold hover:bg-neon-green hover:text-black hover:border-transparent transition-all uppercase cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-sm">group_add</span> + TẠO NHÓM MỚI
+              </button>
+              <span className="text-[9px] text-on-surface-variant/40 font-mono hidden md:inline font-bold font-mono">NODE ACTIVE // SECURE</span>
+            </div>
           </div>
 
+          {/* Create Group Chat Form */}
+          {showAddGroupForm && (
+            <form id="add-group-form" onSubmit={handleCreateGroup} className="bg-surface-container-lowest border border-neon-green p-4 space-y-4 shadow-[0_0_15px_rgba(0,255,136,0.15)] animate-fade-in">
+              <h3 className="text-xs font-bold text-neon-green uppercase tracking-wider">THIẾT LẬP KÊNH TRUYỀN NHÓM MỚI</h3>
+              
+              <div className="space-y-2">
+                <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant block font-mono">TÊN NHÓM CHAT (TỰ ĐỘNG THÊM #)</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="Ví dụ: BIET_DOI_CYBER, ANH_EM_VIP..."
+                  className="w-full bg-black border border-border-default px-3 py-2 text-xs font-mono text-neon-green outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant block font-mono">CHỌN THÀNH VIÊN BAN ĐẦU ({selectedGroupMembers.length})</label>
+                {contacts.length === 0 ? (
+                  <div className="text-[9px] text-on-surface-variant/50 italic p-3 text-center border border-dashed border-border-default">
+                    Không tìm thấy liên hệ nào để thêm vào nhóm
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto custom-scrollbar border border-border-default/50 p-2 bg-black/40">
+                    {contacts.map((contact) => {
+                      const isChecked = selectedGroupMembers.includes(contact.name);
+                      return (
+                        <div 
+                          key={contact.id}
+                          onClick={() => handleToggleGroupMember(contact.name)}
+                          className={`flex items-center gap-2 p-1.5 border rounded cursor-pointer transition-colors ${
+                            isChecked 
+                              ? 'bg-neon-green/10 border-neon-green text-neon-green' 
+                              : 'bg-transparent border-border-default/40 hover:bg-white/5 text-white/70 hover:text-white'
+                          }`}
+                        >
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            onChange={() => {}} // handled by click
+                            className="rounded border-border-default text-neon-green focus:ring-0 accent-neon-green cursor-pointer"
+                          />
+                          <span className="text-[10px] font-mono truncate uppercase">{contact.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button 
+                  type="submit"
+                  className="bg-neon-green text-black px-4 py-2 text-[10px] font-bold uppercase transition-all hover:bg-white cursor-pointer"
+                >
+                  KHỞI TẠO NHÓM
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowAddGroupForm(false);
+                    setNewGroupName('');
+                    setSelectedGroupMembers([]);
+                  }}
+                  className="border border-border-default text-on-surface-variant px-3 py-2 text-[10px] uppercase hover:text-white cursor-pointer"
+                >
+                  HỦY BỎ
+                </button>
+              </div>
+              <p className="text-[8px] opacity-40 font-mono">CODE-BASE CHỦ SẼ TỰ ĐỘNG CẤP QUYỀN ADMIN CHO BẠN VÀ KHỞI TẠO NODE KÊNH.</p>
+            </form>
+          )}
+
           <div id="groups-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div 
-              onClick={() => onStartChat('#NEON_CITY_RUNNERS')}
-              className="p-4 bg-surface-container-lowest border border-border-default hover:border-terminal-magenta hover:shadow-[0_0_10px_rgba(255,0,255,0.15)] transition-all cursor-pointer group relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center bg-terminal-magenta/10 text-terminal-magenta text-[9px] font-bold font-mono">#404</div>
-              <h3 className="text-xs font-bold text-white mb-1 group-hover:text-terminal-magenta uppercase tracking-wider">SYSTEM_OVERRIDE</h3>
-              <p className="text-[9px] text-on-surface-variant mb-3">12 MEMBERS // 3 ONLINE</p>
-              <div className="flex -space-x-1.5">
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-zinc-800"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-zinc-700"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-zinc-600"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-neon-green font-mono">+9</div>
-              </div>
-            </div>
-
-            <div 
-              onClick={() => onStartChat('#ENCRYPTED_VOX')}
-              className="p-4 bg-surface-container-lowest border border-border-default hover:border-terminal-magenta hover:shadow-[0_0_10px_rgba(255,0,255,0.15)] transition-all cursor-pointer group relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center bg-terminal-magenta/10 text-terminal-magenta text-[9px] font-bold font-mono">#ENC</div>
-              <h3 className="text-xs font-bold text-white mb-1 group-hover:text-terminal-magenta uppercase tracking-wider">CRYPT_KNIGHTS</h3>
-              <p className="text-[9px] text-on-surface-variant mb-3">5 MEMBERS // 5 ONLINE</p>
-              <div className="flex -space-x-1.5">
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-cyan-900"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-cyan-800"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-cyan-700"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-neon-cyan font-mono">FULL</div>
-              </div>
-            </div>
-
-            <div 
-              onClick={() => onStartChat('#BLACK_MARKET_DASH')}
-              className="p-4 bg-surface-container-lowest border border-border-default hover:border-terminal-magenta hover:shadow-[0_0_10px_rgba(255,0,255,0.15)] transition-all cursor-pointer group relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center bg-terminal-magenta/10 text-terminal-magenta text-[9px] font-bold font-mono">#RAW</div>
-              <h3 className="text-xs font-bold text-white mb-1 group-hover:text-terminal-magenta uppercase tracking-wider">GLITCH_HUNTERS</h3>
-              <p className="text-[9px] text-on-surface-variant mb-3">82 MEMBERS // 14 ONLINE</p>
-              <div className="flex -space-x-1.5">
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-emerald-900"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-emerald-800"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] bg-emerald-700"></div>
-                <div className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-hot-pink font-mono">+79</div>
-              </div>
-            </div>
+            {groupThreads.map((group) => {
+              // Custom displays for fallback metrics
+              const memberCount = group.id === 'g1' ? 12 : group.id === 'g2' ? 5 : group.id === 'g3' ? 82 : (group.initialMembers?.length || 0) + 1;
+              const onlineCount = group.id === 'g1' ? 3 : group.id === 'g2' ? 5 : group.id === 'g3' ? 14 : 1;
+              const isDefaultAndFull = group.id === 'g2';
+              
+              return (
+                <div 
+                  key={group.id}
+                  onClick={() => onStartChat(group.name)}
+                  className="p-4 bg-surface-container-lowest border border-border-default hover:border-terminal-magenta hover:shadow-[0_0_10px_rgba(255,0,255,0.15)] transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[110px]"
+                >
+                  <div className="absolute top-0 right-0 w-8 h-8 flex items-center justify-center bg-terminal-magenta/10 text-terminal-magenta text-[9px] font-bold font-mono">
+                    {group.nodeValue || '#GRP'}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white mb-1 group-hover:text-terminal-magenta uppercase tracking-wider truncate" title={group.name}>
+                      {group.name.replace('#', '')}
+                    </h3>
+                    <p className="text-[9px] text-on-surface-variant mb-3">
+                      {memberCount} MEMBERS // {onlineCount} ONLINE
+                    </p>
+                  </div>
+                  <div className="flex -space-x-1.5 mt-auto">
+                    <img 
+                      src={group.avatar} 
+                      alt="Avatar" 
+                      className="w-5 h-5 border border-[#0A0A0F] bg-zinc-800 object-cover" 
+                      referrerPolicy="no-referrer"
+                    />
+                    {group.initialMembers && group.initialMembers.slice(0, 3).map((m, idx) => (
+                      <div 
+                        key={idx} 
+                        className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-neon-green font-mono uppercase"
+                        title={m}
+                      >
+                        {m.substring(0, 2)}
+                      </div>
+                    ))}
+                    {group.initialMembers && group.initialMembers.length > 3 && (
+                      <div className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-neon-cyan font-mono">
+                        +{group.initialMembers.length - 3}
+                      </div>
+                    )}
+                    {!group.initialMembers && (
+                      <>
+                        <div className="w-5 h-5 border border-[#0A0A0F] bg-zinc-700"></div>
+                        <div className="w-5 h-5 border border-[#0A0A0F] bg-zinc-600"></div>
+                        <div className="w-5 h-5 border border-[#0A0A0F] flex items-center justify-center bg-surface-container-high text-[7px] font-bold text-neon-green font-mono">
+                          {isDefaultAndFull ? 'FULL' : '+9'}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

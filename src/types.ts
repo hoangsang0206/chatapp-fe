@@ -17,6 +17,7 @@ export interface ChatThread {
   unreadCount: number;
   messages: Message[];
   nodeValue?: string;
+  initialMembers?: string[];
 }
 
 export interface Story {

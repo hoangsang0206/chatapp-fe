@@ -191,6 +191,33 @@ export default function App() {
     }
   };
 
+  const handleCreateGroupChat = (name: string, members: string[]) => {
+    const formattedName = name.trim().startsWith('#') ? name.trim() : `#${name.trim().toUpperCase().replace(/\s+/g, '_')}`;
+    const newThreadId = `g-new-${Date.now()}`;
+    const newThread: ChatThread = {
+      id: newThreadId,
+      name: formattedName,
+      type: 'group',
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(formattedName)}`,
+      unreadCount: 0,
+      nodeValue: '#' + Math.floor(Math.random() * 900 + 100),
+      messages: [
+        {
+          id: `msg-g-first-${Date.now()}`,
+          sender: 'SYSTEM',
+          text: `Nhóm bảo mật ${formattedName} đã được thiết lập bởi Bùi Hữu Vũ.`,
+          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+          isMine: false
+        }
+      ],
+      initialMembers: members
+    };
+
+    setThreads(prev => [newThread, ...prev]);
+    setActiveThreadId(newThreadId);
+    setActiveTab('chat');
+  };
+
   return (
     <div id="app-root-container" className="selection:bg-neon-green selection:text-black grid-bg min-h-screen relative overflow-hidden">
       {/* Sidebar Navigation */}
@@ -458,6 +485,8 @@ export default function App() {
             onRejectRequest={handleRejectRequest}
             onAddContact={handleAddContact}
             onStartChat={handleStartChatFromContact}
+            groupThreads={threads.filter(t => t.type === 'group')}
+            onCreateGroupChat={handleCreateGroupChat}
           />
         )}
 

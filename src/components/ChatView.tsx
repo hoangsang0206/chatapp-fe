@@ -160,7 +160,20 @@ export default function ChatView({
   };
 
   const activeFiles = customFileState[activeThread.id] || [];
-  const activeMembers = groupMembersState[activeThread.id] || [];
+  const activeMembers = groupMembersState[activeThread.id] || (
+    activeThread.type === 'group'
+      ? [
+          { id: 'm-admin', name: userName || 'Bùi Hữu Vũ', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM', role: 'admin' as const, status: 'Online' },
+          ...(activeThread.initialMembers || []).map((name, idx) => ({
+            id: `m-init-${idx}-${name}`,
+            name: name,
+            avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.replace(/\s+/g, '_'))}`,
+            role: 'member' as const,
+            status: 'Online'
+          }))
+        ]
+      : []
+  );
   const allContacts = ['ZERO_COOL', 'VOID_WALKER', 'CRASH_OVERRIDE', 'ACID_BURN', 'LORD_NIKON', 'X-STATIC'];
   const availableToAdd = allContacts.filter(contact => !activeMembers.some(m => m.name.toUpperCase() === contact.toUpperCase()));
 
@@ -631,61 +644,6 @@ export default function ChatView({
               </div>
             </div>
           )}
-
-          {/* 6: Nút quản lý thông báo */}
-          <div className="py-4 border-b border-border-default/50 space-y-3 font-mono">
-            <h5 className="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest flex items-center gap-1">
-              <span className="material-symbols-outlined text-[13px]">notifications_active</span> QUẢN LÝ THÔNG BÁO CO-DEF
-            </h5>
-
-            <div className="flex items-center justify-between bg-black/20 border border-border-default/40 p-2 rounded">
-              <div className="text-left">
-                <p className="text-[10px] text-white font-semibold uppercase">Báo hiệu thời gian thực</p>
-                <p className="text-[8px] text-on-surface-variant/85 font-mono">
-                  {(isMuted[activeThread.id]) ? 'TẮT THÔNG BÁO' : 'BẬT THÔNG BÁO'}
-                </p>
-              </div>
-              
-              <button 
-                type="button"
-                onClick={() => {
-                  setIsMuted(prev => ({
-                    ...prev,
-                    [activeThread.id]: !prev[activeThread.id]
-                  }));
-                }}
-                className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer outline-none relative duration-200 border ${
-                  isMuted[activeThread.id] ? 'bg-[#333]/40 border-white/15' : 'bg-neon-cyan/20 border-neon-cyan/60'
-                }`}
-              >
-                <span className={`block w-3.5 h-3.5 rounded-full transition-transform duration-200 ${
-                  isMuted[activeThread.id] ? 'translate-x-0 bg-on-surface-variant/70' : 'translate-x-[14px] bg-neon-cyan'
-                }`}></span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-1 pt-1">
-              {(['loud', 'soft', 'off'] as const).map(style => (
-                <button
-                  type="button"
-                  key={style}
-                  onClick={() => {
-                    setSoundProfile(prev => ({
-                      ...prev,
-                      [activeThread.id]: style
-                    }));
-                  }}
-                  className={`text-[8px] py-1 border text-center font-bold uppercase transition-all duration-150 cursor-pointer ${
-                    (soundProfile[activeThread.id] || 'loud') === style 
-                      ? 'bg-neon-cyan/15 border-neon-cyan text-neon-cyan shadow-[0_0_8px_rgba(0,212,255,0.2)]' 
-                      : 'bg-transparent border-border-default/40 text-on-surface-variant/60 hover:text-white hover:border-white/30'
-                  }`}
-                >
-                  {style === 'loud' ? 'Âm báo lớn' : style === 'soft' ? 'Chỉ rung' : 'Tắt rung'}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* 5: Nút out nhóm chat / Xóa đàm thoại */}
           <div className="pt-4 border-t border-border-default/40 mt-auto">
