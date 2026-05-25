@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CalendarTodo } from '../types';
 
 interface CalendarTodoViewProps {
@@ -27,7 +27,14 @@ export default function CalendarTodoView({
   const [newTime, setNewTime] = useState<string>('');
   const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [newDescription, setNewDescription] = useState<string>('');
+  const [newCategory, setNewCategory] = useState<string>('CÔNG VIỆC');
+  const [newTagsString, setNewTagsString] = useState<string>('');
+  const [newAttachments, setNewAttachments] = useState<{name: string, url: string, type: 'file' | 'image', size: string}[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [activeAttachmentPreview, setActiveAttachmentPreview] = useState<{name: string, url: string, type: 'file' | 'image'} | null>(null);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Trigger Toast Alert
   const triggerToast = (msg: string) => {
@@ -106,6 +113,44 @@ export default function CalendarTodoView({
   ];
   const daysOfWeekLabels = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file: File) => {
+      const reader = new FileReader();
+      const sizeStr = file.size > 1024 * 1024 
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+        : `${(file.size / 1024).toFixed(0)} KB`;
+
+      const fileType: 'image' | 'file' = file.type.startsWith('image/') ? 'image' : 'file';
+
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setNewAttachments(prev => [
+          ...prev,
+          {
+            name: file.name,
+            url: dataUrl,
+            type: fileType,
+            size: sizeStr
+          }
+        ]);
+        triggerToast(`ĐÃ ĐÍNH KÈM TỆP: ${file.name.toUpperCase()}`);
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveAttachment = (indexToRemove: number) => {
+    setNewAttachments(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   // Submit new task
   const handleCreateTodo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +159,11 @@ export default function CalendarTodoView({
       return;
     }
 
+    const tags = newTagsString
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0 && tag !== '#');
+
     const newTodoObj: CalendarTodo = {
       id: `todo-${Date.now()}`,
       title: newTitle.trim(),
@@ -121,17 +171,23 @@ export default function CalendarTodoView({
       dateStr: selectedDateStr,
       priority: newPriority,
       time: newTime.trim() || undefined,
-      description: newDescription.trim() || undefined
+      description: newDescription.trim() || undefined,
+      category: newCategory,
+      tags: tags.length > 0 ? tags.map(t => t.startsWith('#') ? t : `#${t}`) : undefined,
+      attachments: newAttachments.length > 0 ? newAttachments : undefined
     };
 
     onAddTodo(newTodoObj);
-    triggerToast(`ĐÃ LÊN LỊCH: ${newTodoObj.title.toUpperCase()}`);
+    triggerToast(`ĐÃ LÊN LỊCH CHẤP HÀNH: ${newTodoObj.title.toUpperCase()}`);
     
     // Clear state
     setNewTitle('');
     setNewTime('');
     setNewPriority('medium');
     setNewDescription('');
+    setNewCategory('CÔNG VIỆC');
+    setNewTagsString('');
+    setNewAttachments([]);
     setIsFormOpen(false);
   };
 
@@ -140,8 +196,15 @@ export default function CalendarTodoView({
 
   // Apply filters
   const filteredTodos = localTodos.filter(t => {
-    if (filter === 'pending') return !t.completed;
-    if (filter === 'completed') return t.completed;
+    // Stage 1: Status Filter
+    if (filter === 'pending' && t.completed) return false;
+    if (filter === 'completed' && !t.completed) return false;
+
+    // Stage 2: Category Filter
+    if (categoryFilter !== 'all') {
+      const todoCat = t.category || 'CÔNG VIỆC';
+      if (todoCat !== categoryFilter) return false;
+    }
     return true;
   });
 
@@ -377,7 +440,7 @@ export default function CalendarTodoView({
             </div>
 
             {/* Filters Row */}
-            <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-border-default/20">
+            <div className="flex items-center justify-between pb-3 mb-2 border-b border-border-default/20">
               <div className="flex gap-2 font-mono">
                 <button
                   type="button"
@@ -431,10 +494,34 @@ export default function CalendarTodoView({
               </button>
             </div>
 
+            {/* Category Filters Row */}
+            <div className="flex flex-wrap items-center gap-1.5 pb-3.5 mb-3.5 border-b border-border-default/20 font-mono">
+              <span className="text-[7.5px] text-on-surface-variant font-bold uppercase tracking-wider mr-1">Danh mục:</span>
+              {['all', 'CÔNG VIỆC', 'HỌC TẬP', 'CÁ NHÂN', 'BẢO MẬT', 'KHÁC'].map((cat) => {
+                const count = cat === 'all' 
+                  ? localTodos.length 
+                  : localTodos.filter(t => (t.category || 'CÔNG VIỆC') === cat).length;
+                return (
+                  <button
+                    type="button"
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`text-[8.5px] font-bold px-2 py-0.5 uppercase tracking-tight transition-all border cursor-pointer ${
+                      categoryFilter === cat
+                        ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_5px_rgba(0,212,255,0.15)]'
+                        : 'border-transparent text-on-surface-variant/60 hover:text-white'
+                    }`}
+                  >
+                    {cat === 'all' ? 'TẤT CẢ' : cat} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Inline Add Todo Form Option */}
             {isFormOpen && (
-              <form onSubmit={handleCreateTodo} className="bg-black/55 border border-neon-cyan/30 p-4 mb-4 space-y-3.5 font-mono animate-fade-in relative">
-                <div className="absolute right-2 top-2 text-[6.5px] text-neon-cyan/50 font-mono">INIT_SCHEDULER_V2</div>
+              <form onSubmit={handleCreateTodo} className="bg-black/85 border border-neon-cyan/40 p-4 mb-4 space-y-3.5 font-mono animate-fade-in relative">
+                <div className="absolute right-2 top-2 text-[6.5px] text-neon-cyan/50 font-mono font-bold tracking-widest">INIT_SCHEDULER_V3</div>
                 
                 <div className="space-y-1">
                   <label className="block text-[8px] text-on-surface-variant font-bold uppercase tracking-widest">Tên nhiệm vụ / Công việc *</label>
@@ -473,6 +560,35 @@ export default function CalendarTodoView({
                   </div>
                 </div>
 
+                {/* Categories & Tags Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-[8px] text-on-surface-variant font-bold uppercase tracking-widest">Danh mục / Category</label>
+                    <select
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="w-full bg-black border border-border-default px-2.5 py-2 text-[11px] text-white outline-none focus:border-neon-cyan font-mono"
+                    >
+                      <option value="CÔNG VIỆC">📂 CÔNG VIỆC // WORK</option>
+                      <option value="HỌC TẬP">📂 HỌC TẬP // STUDY</option>
+                      <option value="CÁ NHÂN">📂 CÁ NHÂN // PERSONAL</option>
+                      <option value="BẢO MẬT">📂 BẢO MẬT // SECURITY</option>
+                      <option value="KHÁC">📂 KHÁC // OTHER</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[8px] text-on-surface-variant font-bold uppercase tracking-widest">Thẻ / Tag (cách bằng dấu phẩy)</label>
+                    <input
+                      type="text"
+                      value={newTagsString}
+                      onChange={(e) => setNewTagsString(e.target.value)}
+                      placeholder="E.g. database, backup, api"
+                      className="w-full bg-black border border-border-default px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-neon-cyan font-mono"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="block text-[8px] text-on-surface-variant font-bold uppercase tracking-widest">Mô tả cụ thể nhiệm vụ</label>
                   <textarea
@@ -482,6 +598,53 @@ export default function CalendarTodoView({
                     rows={2}
                     className="w-full bg-black border border-border-default px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-neon-cyan font-mono resize-none"
                   />
+                </div>
+
+                {/* Attachments Section Inside Form */}
+                <div className="space-y-1.5 border-t border-border-default/20 pt-2 text-left">
+                  <label className="block text-[8px] text-on-surface-variant font-bold uppercase tracking-widest">
+                    Đính kèm tài liệu / Attachments ({newAttachments.length})
+                  </label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border border-dashed border-border-default hover:border-neon-cyan/80 bg-black/45 p-2 text-center cursor-pointer hover:bg-black transition-all flex flex-col items-center justify-center py-3"
+                  >
+                    <span className="material-symbols-outlined text-[15px] text-neon-cyan animate-pulse">cloud_upload</span>
+                    <span className="text-[8px] text-white uppercase font-bold tracking-wider mt-1">Click để đính kèm tệp tin tài liệu/ảnh</span>
+                    <span className="text-[6.5px] text-on-surface-variant uppercase mt-0.5">LƯU TRỮ OFFLINE TIÊU CHUẨN</span>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    multiple
+                    onChange={handleAttachmentUpload}
+                    className="hidden"
+                  />
+
+                  {newAttachments.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-24 overflow-y-auto custom-scrollbar p-1.5 bg-black/60 border border-border-default/45">
+                      {newAttachments.map((att, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-black border border-border-default/50 p-1 text-[8px] font-mono">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="material-symbols-outlined text-[10px] text-neon-cyan">
+                              {att.type === 'image' ? 'image' : 'description'}
+                            </span>
+                            <span className="text-white truncate max-w-[80px]" title={att.name}>{att.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveAttachment(idx);
+                            }}
+                            className="text-hot-pink hover:bg-hot-pink/10 px-1 font-bold rounded cursor-pointer shrink-0 uppercase text-[8px]"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -523,13 +686,24 @@ export default function CalendarTodoView({
 
                       {/* Task Info Content details */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {/* Title text */}
-                          <h4 className={`text-xs font-bold font-mono tracking-wide break-words uppercase ${
-                            todo.completed ? 'text-white/40 line-through' : 'text-white'
-                          }`}>
-                            {todo.title}
-                          </h4>
+                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                          {/* Category Badge */}
+                          {(() => {
+                            const cat = todo.category || 'CÔNG VIỆC';
+                            let helperColor = 'border-neon-cyan/35 text-neon-cyan bg-neon-cyan/5';
+                            if (cat === 'HỌC TẬP') helperColor = 'border-neon-green/35 text-neon-green bg-neon-green/5';
+                            if (cat === 'CÁ NHÂN') helperColor = 'border-yellow-400/35 text-yellow-400 bg-yellow-400/5';
+                            if (cat === 'BẢO MẬT') helperColor = 'border-hot-pink/35 text-hot-pink bg-hot-pink/5';
+                            if (cat === 'KHÁC') helperColor = 'border-white/25 text-white/70 bg-white/5';
+                            
+                            return (
+                              <span className={`text-[7.5px] font-black px-1.5 py-0.2 border uppercase tracking-wider font-mono shrink-0 ${
+                                todo.completed ? 'border-neutral-700/40 text-neutral-500 bg-transparent' : helperColor
+                              }`}>
+                                📂 {cat}
+                              </span>
+                            );
+                          })()}
 
                           {/* Time Stamp badge if any */}
                           {todo.time && (
@@ -552,13 +726,83 @@ export default function CalendarTodoView({
                           </span>
                         </div>
 
+                        {/* Title text */}
+                        <h4 className={`text-xs font-bold font-mono tracking-wide break-words uppercase ${
+                          todo.completed ? 'text-white/40 line-through' : 'text-white'
+                        }`}>
+                          {todo.title}
+                        </h4>
+
+                        {/* Tags display */}
+                        {todo.tags && todo.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {todo.tags.map((tag) => (
+                              <span 
+                                key={tag} 
+                                className={`text-[7.5px] font-mono font-semibold tracking-tight px-1.5 py-0.2 select-none border transition-colors ${
+                                  todo.completed 
+                                    ? 'border-neutral-800 text-neutral-600' 
+                                    : 'border-neon-cyan/20 text-neon-cyan/85 bg-neon-cyan/5 hover:bg-neon-cyan/10'
+                                }`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Description text */}
                         {todo.description && (
-                          <p className={`text-[10px] mt-1.5 leading-relaxed font-mono ${
+                          <p className={`text-[10px] mt-2 leading-relaxed font-mono ${
                             todo.completed ? 'text-white/20' : 'text-on-surface-variant'
                           }`}>
                             {todo.description}
                           </p>
+                        )}
+
+                        {/* Attachments display */}
+                        {todo.attachments && todo.attachments.length > 0 && (
+                          <div className="mt-2.5 pt-2 border-t border-border-default/20 space-y-1.5">
+                            <span className="text-[7.5px] font-mono text-on-surface-variant uppercase font-bold tracking-wider block">TỆP ĐÍNH KÈM ({todo.attachments.length}):</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                              {todo.attachments.map((att, idx) => (
+                                <div 
+                                  key={idx} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (att.type === 'image') {
+                                      setActiveAttachmentPreview(att);
+                                    } else {
+                                      // Trigger file download
+                                      const link = document.createElement('a');
+                                      link.href = att.url;
+                                      link.download = att.name;
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                      triggerToast(`TẢI XUỐNG: ${att.name}`);
+                                    }
+                                  }}
+                                  className="flex items-center gap-1.5 p-1 border border-border-default bg-black/50 hover:bg-black hover:border-neon-cyan/50 cursor-pointer group/att transition-all overflow-hidden"
+                                >
+                                  {att.type === 'image' ? (
+                                    <div className="w-5 h-5 shrink-0 overflow-hidden border border-border-default bg-neutral-900 flex items-center justify-center">
+                                      <img src={att.url} alt="Att thumb" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 shrink-0 border border-border-default bg-[#0B0B10] flex items-center justify-center text-neon-cyan text-[9px]">
+                                      <span className="material-symbols-outlined text-[10px]">description</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex-1 min-w-0 text-[8px] font-mono">
+                                    <p className="text-white group-hover/att:text-neon-cyan truncate leading-tight uppercase font-bold">{att.name}</p>
+                                    <p className="text-on-surface-variant leading-none mt-0.5 font-bold uppercase">{att.size} • {att.type === 'image' ? 'IMAGE' : 'DOC'}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
 
@@ -620,6 +864,55 @@ export default function CalendarTodoView({
         </div>
 
       </div>
+
+      {/* Premium Lightbox Overlay for Image Attachments */}
+      {activeAttachmentPreview && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 font-mono animate-fade-in"
+          onClick={() => setActiveAttachmentPreview(null)}
+        >
+          <div 
+            className="bg-surface-card border border-neon-cyan/50 max-w-2xl w-full p-5 relative flex flex-col gap-4 shadow-[0_0_40px_rgba(0,212,255,0.25)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border-default/30 pb-2.5">
+              <div className="text-[10px] text-neon-cyan font-bold uppercase tracking-widest flex items-center gap-2">
+                <span className="material-symbols-outlined text-xs text-neon-cyan animate-pulse">image</span>
+                XEM TRƯỚC ĐÍNH KÈM // ATTACHMENT PREVIEW
+              </div>
+              <button 
+                onClick={() => setActiveAttachmentPreview(null)}
+                className="text-hot-pink hover:text-white transition-colors text-[10px] font-bold uppercase cursor-pointer"
+              >
+                [ ĐÓNG // CLOSE ]
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-center bg-black/80 border border-border-default/45 max-h-[60vh] overflow-hidden p-2">
+              <img 
+                src={activeAttachmentPreview.url} 
+                alt="Attachment preview" 
+                className="max-h-[55vh] max-w-full object-contain border border-border-default/20"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            
+            <div className="flex items-center justify-between text-[9px] border-t border-border-default/20 pt-2.5">
+              <span className="text-on-surface-variant truncate uppercase font-bold pr-4 max-w-[320px]" title={activeAttachmentPreview.name}>
+                TÊN: {activeAttachmentPreview.name}
+              </span>
+              <a 
+                href={activeAttachmentPreview.url}
+                download={activeAttachmentPreview.name}
+                onClick={() => triggerToast(`ĐANG DOWNLOAD: ${activeAttachmentPreview.name.toUpperCase()}`)}
+                className="px-3.5 py-1.5 bg-neon-cyan hover:bg-neon-cyan/90 text-black font-black uppercase text-[9px] tracking-wider transition-all hover:shadow-[0_0_10px_rgba(0,212,255,0.4)] shrink-0"
+              >
+                TẢI XUỐNG FILE
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

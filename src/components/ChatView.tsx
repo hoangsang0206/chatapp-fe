@@ -7,6 +7,7 @@ interface ChatViewProps {
   onSelectThread: (threadId: string) => void;
   onSendMessage: (threadId: string, text: string, isIncoming?: boolean, sticker?: string, file?: Message['file']) => void;
   userName: string;
+  userAvatar: string;
   onLeaveThread?: (threadId: string) => void;
 }
 
@@ -16,6 +17,7 @@ export default function ChatView({
   onSelectThread,
   onSendMessage,
   userName,
+  userAvatar,
   onLeaveThread
 }: ChatViewProps) {
   const [inputText, setInputText] = useState<string>('');
@@ -311,17 +313,17 @@ export default function ChatView({
   // Hardcoded initial list of members in groups, that the admin (Bùi Hữu Vũ) can manage
   const [groupMembersState, setGroupMembersState] = useState<{ [threadId: string]: Array<{ id: string; name: string; avatar: string; role: 'admin' | 'member'; status: string }> }>({
     g1: [
-      { id: 'm1', name: 'Bùi Hữu Vũ', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM', role: 'admin', status: 'Online' },
+      { id: 'm1', name: userName || 'Bùi Hữu Vũ', avatar: userAvatar, role: 'admin', status: 'Online' },
       { id: 'm2', name: 'ZeroCool', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAI8oYsHlEJVlNd0JPmkanne2ENjxWNHqeF8XRBEorrUbqG2rzZzFxClg772yjh0I2H2psJ_E3N2YzDZrteMEbzw0CqvZPqhRmA7kDysUhzzRQujYPdDSEkwW6dME4db4TafGuDlB4U262UdYVsnoApRayASPbhzUzYmyuaJRZtIWejghwYOz1x_Af9tT8wYAvAEIrlrUYWf1neUyTNTPXoi7_eUx5GXCjyOzjJ6DPouqV0CP5Gn42NHyk-XU1ekMlZGoh-vzQo_1E', role: 'member', status: 'Online' },
       { id: 'm3', name: 'Acid Burn', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDSta69hUqiI_HfA1YHvnkyRjlKzhgjuGpJYfNV4BY6xUMnQ6XtTguV_E-cqlrtAXqRk0NbQfX1bnT0sYTITLzpd3zbfKkihMW79jEmgtgFi3xy1HqxhKNoqjJod810LFOMs_ZD-FXbUJSluwzKy-y92vxGaoqICUKXiZ62m_sKS8lrHkdG7l_ajZdu5youfJx2pA_I1PBeksEj0tQNxoTYxDcq1vs110wCkOaTwoAQDOU6ma_hxblFL0vj3yABSuILetyAVsHUJNw', role: 'member', status: 'Offline' },
       { id: 'm4', name: 'Crash Override', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBIGcMjlJVWJfzhNFiNG33lewd8C01uV8UCq1kKf9RVD46_ojbbTwzY0_Uv9Mj9EyjaZnqsAvz-i4JDwK3fTaeeqMj9pt7nJUrVw2ugpXdQyzFKpROuzKIXrjzlEZVGs1nd4rZxNx8vmW-Ht7Mx67TYD_aO3zH6FeJU0I9soC47Bua7VmyWJee_eZfa4niQ0ynh1yyAEA_AbIv-8Nq82oTbDwbpSGGyqJpLGqdM9XkkRSzVm-YFl0-pWQewo6k8DExXPZG5C3BrHzo', role: 'member', status: 'Online' },
     ],
     g2: [
-      { id: 'm1_g2', name: 'Bùi Hữu Vũ', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM', role: 'admin', status: 'Online' },
+      { id: 'm1_g2', name: userName || 'Bùi Hữu Vũ', avatar: userAvatar, role: 'admin', status: 'Online' },
       { id: 'm2_g2', name: 'CipherMaster', avatar: 'https://api.dicebear.com/7.x/pixel-art/svg?seed=CipherMaster', role: 'member', status: 'Online' },
     ],
     g3: [
-      { id: 'm1_g3', name: 'Bùi Hữu Vũ', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM', role: 'admin', status: 'Online' },
+      { id: 'm1_g3', name: userName || 'Bùi Hữu Vũ', avatar: userAvatar, role: 'admin', status: 'Online' },
       { id: 'm2_g3', name: 'Lord Nikon', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDhxh_JALFVHGhYwXr_nlv1d0FXT8EWqab8vdk4I1CowuvBEU0iStoebQLaRyr0LblXjlkbolX1VJ3l7O0z72cy2CT0JQ8wMYXs8mekJ0DVyAwavbPkXqeAQuqdjH7am_I7Vkeuli2LVCV3IpcG6kQ6Evoo18bD8890yDafHIE475zUUmdXZYDq3tmDwLmUxuDTC4wxXZEwWQf7ZEXTlIGLcFLjJIIjoLomHzmT8Cmgbw2riPH947CqVylveMpwzuviId9H2aLOQz8', role: 'member', status: 'Online' },
     ]
   });
@@ -418,7 +420,7 @@ export default function ChatView({
   const activeMembers = groupMembersState[activeThread.id] || (
     activeThread.type === 'group'
       ? [
-          { id: 'm-admin', name: userName || 'Bùi Hữu Vũ', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM', role: 'admin' as const, status: 'Online' },
+          { id: 'm-admin', name: userName || 'Bùi Hữu Vũ', avatar: userAvatar, role: 'admin' as const, status: 'Online' },
           ...(activeThread.initialMembers || []).map((name, idx) => ({
             id: `m-init-${idx}-${name}`,
             name: name,
@@ -662,7 +664,7 @@ export default function ChatView({
                 msg.isMine ? 'border-neon-cyan' : 'border-neon-magenta'
               }`}>
                 <img 
-                  src={msg.isMine ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM' : activeThread.avatar} 
+                  src={msg.isMine ? userAvatar : activeThread.avatar} 
                   alt={msg.sender} 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

@@ -18,6 +18,7 @@ import SettingsView from './components/SettingsView';
 import StoriesView from './components/StoriesView';
 import CalendarTodoView from './components/CalendarTodoView';
 import GeminiChatView from './components/GeminiChatView';
+import AuthView from './components/AuthView';
 
 export default function App() {
   // Navigation tabs
@@ -25,11 +26,20 @@ export default function App() {
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   
   // App States
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('cyber_auth_token') === 'true';
+  });
+
   const [profile, setProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('cyber_user_profile');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Ensure email exists from INITIAL_PROFILE if absent in saved state
+        if (!parsed.email) {
+          parsed.email = INITIAL_PROFILE.email;
+        }
+        return parsed;
       } catch (e) {
         return INITIAL_PROFILE;
       }
@@ -46,7 +56,21 @@ export default function App() {
   const [threads, setThreads] = useState<ChatThread[]>(INITIAL_CHATS);
   const [friendRequests, setFriendRequests] = useState(INITIAL_FRIEND_REQUESTS);
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
-  const [todos, setTodos] = useState<CalendarTodo[]>(INITIAL_TODOS);
+  const [todos, setTodos] = useState<CalendarTodo[]>(() => {
+    const saved = localStorage.getItem('cyber_calendar_todos');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return INITIAL_TODOS;
+      }
+    }
+    return INITIAL_TODOS;
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('cyber_calendar_todos', JSON.stringify(todos));
+  }, [todos]);
   
   const [activeThreadId, setActiveThreadId] = useState<string>('t1');
   
@@ -121,10 +145,19 @@ export default function App() {
       sender: promptName.trim().toUpperCase(),
       seed: String(randomSeed),
       isMine: true,
-      avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomSeed}`
+      avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${randomSeed}`,
+      reactionCount: 0
     };
 
     setStories(prev => [newStory, ...prev]);
+  };
+
+  const handleReactStory = (storyId: string) => {
+    setStories(prev => prev.map(story => 
+      story.id === storyId 
+        ? { ...story, reactionCount: (story.reactionCount || 0) + 1 }
+        : story
+    ));
   };
 
   const handleAcceptRequest = (requestId: string) => {
@@ -257,6 +290,28 @@ export default function App() {
     setActiveThreadId(newThreadId);
     setActiveTab('chat');
   };
+
+  const handleLogin = (name: string) => {
+    setProfile(prev => ({ ...prev, name }));
+    setIsAuthenticated(true);
+    localStorage.setItem('cyber_auth_token', 'true');
+  };
+
+  const handleRegister = (name: string, email: string) => {
+    setProfile(prev => ({ ...prev, name, email }));
+    setIsAuthenticated(true);
+    localStorage.setItem('cyber_auth_token', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('cyber_auth_token');
+    setShowProfileCard(false);
+  };
+
+  if (!isAuthenticated) {
+    return <AuthView onLogin={handleLogin} onRegister={handleRegister} />;
+  }
 
   return (
     <div id="app-root-container" className="selection:bg-neon-green selection:text-black grid-bg min-h-screen relative overflow-hidden">
@@ -522,8 +577,13 @@ export default function App() {
           <div className="pt-10 p-5 bg-surface-container-lowest font-mono">
             <div className="mb-4">
               <h3 id="overlay-profile-name" className="text-md font-black text-white">{profile.name}</h3>
-              <p id="overlay-profile-id" className="text-[9px] text-neon-green font-bold tracking-tight uppercase mt-0.5">{profile.userId}</p>
-              <p id="overlay-profile-bio" className="text-[10px] text-on-surface-variant/80 leading-relaxed mt-2 italic">
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                <p id="overlay-profile-id" className="text-[9px] text-neon-green font-bold tracking-tight uppercase">{profile.userId}</p>
+                {profile.email && (
+                  <p id="overlay-profile-email" className="text-[8px] text-neon-cyan/85 font-bold tracking-normal lowercase truncate">{profile.email}</p>
+                )}
+              </div>
+              <p id="overlay-profile-bio" className="text-[10px] text-on-surface-variant/80 leading-relaxed mt-2.5 italic">
                 "{profile.bio}"
               </p>
             </div>
@@ -537,7 +597,7 @@ export default function App() {
               </button>
               <button 
                 id="logout-profile-short"
-                onClick={() => { setShowProfileCard(false); alert("Session terminated successfully."); }}
+                onClick={handleLogout}
                 className="w-full py-1.5 border border-hot-pink text-hot-pink text-[9px] font-bold hover:bg-hot-pink hover:text-black transition-all uppercase tracking-wider cursor-pointer font-mono"
               >
                 Đăng Xuất
@@ -572,6 +632,7 @@ export default function App() {
             onSelectThread={(id) => setActiveThreadId(id)}
             onSendMessage={handleSendMessage}
             userName={profile.name}
+            userAvatar={profile.avatar}
             onLeaveThread={handleLeaveThread}
           />
         )}
@@ -585,6 +646,7 @@ export default function App() {
             setSelectedStoryId={setSelectedStoryId}
             onSendMessage={handleSendMessage}
             threads={threads}
+            onReactStory={handleReactStory}
           />
         )}
 

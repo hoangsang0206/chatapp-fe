@@ -5,7 +5,8 @@ export const INITIAL_PROFILE: UserProfile = {
   bio: 'Sống trong lưới. Chết trong mã. Liên lạc bảo mật qua kênh Delta.',
   userId: 'UX_8829_ALPHA',
   avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMM_9hCXx8LmVtQvXo2cCAySjAuFzAR6Apv0dQVRjaCrYqdhMiNmb8vnF5zUhkv_9IQlJotuScGYBar5Kx2cmwswIYtdVd6bxR5_1QnZSGHX-UtwLl3VqNjo8sGZEkFPjhQuSGeJmBm2D5K8CW4XW2Bq-W_vpDA84ZPCge2hEcGapD_wbpHEXcJxbrH0oQU-0qiYql8ptmylwnh3769LSt3iKYYEWZD0UHzT-PpfhRlkoQRBWY4Jj-6m2yS1cRf72ayZhv98UqfFM',
-  banner: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBoZZgF4-VXO4aezTrdSAyWj-uGWTKAUK1ssf2Y2bZOyPH2QkLovryINv7EVXemK5PUioEI6OLR4Gi5cIMrd1dRTCZ21M0z9NZeXnBzUHY_rlkBZZckgyfeHqIIzxyag24lfY-x361pZ5NslPCkpvQvEd7B4JFeM6lOtZS-uwfs22-mwTgyx35f7LNNlFv0tHaJiZa8Nt0W_zeLhd8G4kQ3l4UDibmbQG5ZhPj3kvr8rr4jnEuwO8NyXTGMDtm-QoUtQV_LPMXw9fQo'
+  banner: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBoZZgF4-VXO4aezTrdSAyWj-uGWTKAUK1ssf2Y2bZOyPH2QkLovryINv7EVXemK5PUioEI6OLR4Gi5cIMrd1dRTCZ21M0z9NZeXnBzUHY_rlkBZZckgyfeHqIIzxyag24lfY-x361pZ5NslPCkpvQvEd7B4JFeM6lOtZS-uwfs22-mwTgyx35f7LNNlFv0tHaJiZa8Nt0W_zeLhd8G4kQ3l4UDibmbQG5ZhPj3kvr8rr4jnEuwO8NyXTGMDtm-QoUtQV_LPMXw9fQo',
+  email: 'operator_vu@delta.net'
 };
 
 export const INITIAL_STORIES: Story[] = [
@@ -14,28 +15,43 @@ export const INITIAL_STORIES: Story[] = [
     sender: 'Vicky',
     seed: 'Vicky',
     isMine: false,
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDcV0xhLekr-6wP7d21_4g3eQtx6RbN0fffOPyO8NuLSOfwXLgL2UTivvf52dD38zB1JeGgYGoLqu1x5GyaybjvfrUDwAurilmvDMKtL3GJNj8NiL7SpydOhmkcljrM3Xr7ea-RMELzckpvjZkBZ8tsfiDDY-Vx-m32cFvTLEM6nUw4_LhDLefv-DzaUhas8vA8lvZ8TH68SzQqVVAPFW4-VMMWkYctlIv5-rpmZVgqHk3yl1hom1O02_Z61NfgC7g0be9Xlj14I_8t'
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDcV0xhLekr-6wP7d21_4g3eQtx6RbN0fffOPyO8NuLSOfwXLgL2UTivvf52dD38zB1JeGgYGoLqu1x5GyaybjvfrUDwAurilmvDMKtL3GJNj8NiL7SpydOhmkcljrM3Xr7ea-RMELzckpvjZkBZ8tsfiDDY-Vx-m32cFvTLEM6nUw4_LhDLefv-DzaUhas8vA8lvZ8TH68SzQqVVAPFW4-VMMWkYctlIv5-rpmZVgqHk3yl1hom1O02_Z61NfgC7g0be9Xlj14I_8t',
+    imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+    mediaType: 'image',
+    caption: 'PHÁT HIỆN SÓNG TẦN SỐ LẠ Ở KHU VỰC QUẬN 5 // ĐANG PHÂN TÍCH CHỈ SỐ...',
+    reactionCount: 12
   },
   {
     id: 's2',
     sender: 'Kyla',
     seed: 'Kyla',
     isMine: false,
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJmJXRKb_eQkzcIAw2LbynC2pt-nZVA_n9m5AZV92Mb9vSCN1L1VEu1JLcCXqXTK0BCnFyG28qHDFOOHoVXJOvZnfl33hJJ3uNJeds7NdBghNYUhveC5RlFvluDfYyqleHG7keQ4labx0Nmm8aHRcRazgvK5_U8RQda4yO0AC22atIdmbfdcEFTnDRkHwRm5cpYzzuKLBCxMRC74vG7sTWo_Cq8J4f0V-p_nfB0XREJaSqF_Md5wEgqCEOw0kNyHIsIWqJc9b7jANz'
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJmJXRKb_eQkzcIAw2LbynC2pt-nZVA_n9m5AZV92Mb9vSCN1L1VEu1JLcCXqXTK0BCnFyG28qHDFOOHoVXJOvZnfl33hJJ3uNJeds7NdBghNYUhveC5RlFvluDfYyqleHG7keQ4labx0Nmm8aHRcRazgvK5_U8RQda4yO0AC22atIdmbfdcEFTnDRkHwRm5cpYzzuKLBCxMRC74vG7sTWo_Cq8J4f0V-p_nfB0XREJaSqF_Md5wEgqCEOw0kNyHIsIWqJc9b7jANz',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-matrix-style-green-code-running-on-screen-31718-large.mp4',
+    mediaType: 'video',
+    caption: 'ĐANG CHẠY CHƯƠNG TRÌNH KHAI THÁC LỖ HỔNG HỆ THỐNG AN NINH QUẬN 1.',
+    reactionCount: 8
   },
   {
     id: 's3',
     sender: 'Zoey',
     seed: 'Zoey',
     isMine: false,
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDGFrXWCzagA4UmsH-f_EpDn1kdrzgu8_58cRjQzpH0n34r9Yi5S5J4889M15jqomAaeAMr1-Yh48gNU5nM9EE3cFlNXg5bRu5T1douJ1iXOG8xPQUlmWKKBd8WcXxUNVFaJxR807g0nHHp8-O4KNoF-w9z3Xsk_hUTW_wvnF2Zq6VUge7ltJVV1Wg_Sz7ZfFy2Tro2uqTvwQIEiN8f_9kZfwrDKAET5ZzINIT2xMb8xn4wdPM7Q5rT1xKjvtdTwgROoNP-6WIMTieF'
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDGFrXWCzagA4UmsH-f_EpDn1kdrzgu8_58cRjQzpH0n34r9Yi5S5J4889M15jqomAaeAMr1-Yh48gNU5nM9EE3cFlNXg5bRu5T1douJ1iXOG8xPQUlmWKKBd8WcXxUNVFaJxR807g0nHHp8-O4KNoF-w9z3Xsk_hUTW_wvnF2Zq6VUge7ltJVV1Wg_Sz7ZfFy2Tro2uqTvwQIEiN8f_9kZfwrDKAET5ZzINIT2xMb8xn4wdPM7Q5rT1xKjvtdTwgROoNP-6WIMTieF',
+    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
+    mediaType: 'image',
+    caption: 'MẬT MÃ XÂY DỰNG TRÊN MẠNG LƯỚI MEGANET ĐÃ ĐƯỢC CHUYỂN HÓA.',
+    reactionCount: 45
   },
   {
     id: 's4',
     sender: 'Leo',
     seed: 'Leo',
     isMine: false,
-    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBOvGYlXo_Q52_zWuI3nerk_F47q5HaW9hUBJ7EgUleGbAwC3Unio9PYKBDvawzWuoyfLYLncxeuhu5Hf15JH6p-rP7mHBwoDFPxYZAdv8YU5zYGhkt7B-8tUiSBEPmr5k24wdlWlYiPv5wl1DSrSP_S4jhff3eQHVjdvrIvNhz8GyuniOujhWI9dYEn0UNj8hw0HsO-RxDYyvKfJmuJ5fL-k3fYYetdxna2ilI-4V0EgXaqDehbSUlU5MIiyBNW_96RkIiQ9qCbsJ_'
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBOvGYlXo_Q52_zWuI3nerk_F47q5HaW9hUBJ7EgUleGbAwC3Unio9PYKBDvawzWuoyfLYLncxeuhu5Hf15JH6p-rP7mHBwoDFPxYZAdv8YU5zYGhkt7B-8tUiSBEPmr5k24wdlWlYiPv5wl1DSrSP_S4jhff3eQHVjdvrIvNhz8GyuniOujhWI9dYEn0UNj8hw0HsO-RxDYyvKfJmuJ5fL-k3fYYetdxna2ilI-4V0EgXaqDehbSUlU5MIiyBNW_96RkIiQ9qCbsJ_',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hud-interface-of-a-futuristic-software-analysis-41618-large.mp4',
+    mediaType: 'video',
+    caption: 'GIAO DIỆN TRUY CẬP PHÂN TÍCH KHU VỰC CẤM NODE 0xDF82.'
   },
   {
     id: 's5',
@@ -344,7 +360,17 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-25',
     priority: 'high',
     time: '14:00',
-    description: 'Báo cáo chi tiết lỗ hổng zero-day lớp thứ 3 đã được phát hiện.'
+    description: 'Báo cáo chi tiết lỗ hổng zero-day lớp thứ 3 đã được phát hiện.',
+    category: 'BẢO MẬT',
+    tags: ['#security', '#zero-day', '#node-delta'],
+    attachments: [
+      {
+        name: 'so_do_he_thong_0x3.png',
+        url: 'https://lh3.googleusercontent.com/e77_K2HscSbyas5Yn6vTz59F9p7Yn5Fz8y66AmDqD5B6pL2rJ_XSlJxMxMiRH6paC_LlnLpGExNVFTxTSzcXekvj_A1WxV_npzwUvvLrOLfIeXRwyEG4KVLGpsAZI71Y_WCg9dlXeyd1zV2DaRFBirvWJjnnOa_bzV_bbpgoFvd5bmbYsx2SLlGQ2Xa5Vp7_sTdjNJsypTzWrAidwrS1NupZWkqb6eoZmGwokwq',
+        type: 'image',
+        size: '1.2 MB'
+      }
+    ]
   },
   {
     id: 'todo-2',
@@ -353,7 +379,17 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-25',
     priority: 'medium',
     time: '18:30',
-    description: 'Xét duyệt tài liệu kết nối bảo mật cổng 0x4B.'
+    description: 'Xét duyệt tài liệu kết nối bảo mật cổng 0x4B.',
+    category: 'CÔNG VIỆC',
+    tags: ['#api', '#port-0x4b', '#review'],
+    attachments: [
+      {
+        name: 'dieu_khoan_ket_noi.txt',
+        url: 'data:text/plain;base64,Q09OTkVDVElPTiBSRVFVSVJFTUVOVFM6CnBvcnQgPSAweDRCCmF1dGggPSBoYXNoNTEyCnNlY3VyZSA9IHRydWU=',
+        type: 'file',
+        size: '15 KB'
+      }
+    ]
   },
   {
     id: 'todo-3',
@@ -362,7 +398,9 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-25',
     priority: 'high',
     time: '08:00',
-    description: 'Chạy thử kịch bản khai thác mô phỏng.'
+    description: 'Chạy thử kịch bản khai thác mô phỏng.',
+    category: 'BẢO MẬT',
+    tags: ['#firewall', '#scanning']
   },
   {
     id: 'todo-4',
@@ -371,7 +409,9 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-26',
     priority: 'high',
     time: '09:00',
-    description: 'Gửi code hoàn thiện của mô-đun Story Media lên hệ thống.'
+    description: 'Gửi code hoàn thiện của mô-đun Story Media lên hệ thống.',
+    category: 'CÔNG VIỆC',
+    tags: ['#source-code', '#alpha-delivery']
   },
   {
     id: 'todo-5',
@@ -380,7 +420,9 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-26',
     priority: 'low',
     time: '16:00',
-    description: 'Đánh giá khả năng dọn dẹp các tiến trình lạ.'
+    description: 'Đánh giá khả năng dọn dẹp các tiến trình lạ.',
+    category: 'BẢO MẬT',
+    tags: ['#antivirus', '#system-check']
   },
   {
     id: 'todo-6',
@@ -389,7 +431,9 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     dateStr: '2026-05-28',
     priority: 'medium',
     time: '23:00',
-    description: 'Khởi động lại node backup và đồng bộ hóa nhật ký giao dịch.'
+    description: 'Khởi động lại node backup và đồng bộ hóa nhật ký giao dịch.',
+    category: 'CÔNG VIỆC',
+    tags: ['#database', '#maintenance']
   },
   {
     id: 'todo-7',
@@ -397,7 +441,9 @@ export const INITIAL_TODOS: CalendarTodo[] = [
     completed: false,
     dateStr: '2026-05-30',
     priority: 'low',
-    description: 'Lập báo cáo tổng quan hằng tháng gửi hội đồng quản lý.'
+    description: 'Lập báo cáo tổng quan hằng tháng gửi hội đồng quản lý.',
+    category: 'KHÁC',
+    tags: ['#yearly-report', '#security-index']
   }
 ];
 

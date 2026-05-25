@@ -99,18 +99,16 @@ export default function GeminiChatView() {
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('Hành động này sẽ xóa toàn bộ nhật ký mật mã với Gemini AI. Tiếp tục?')) {
-      const defaultState: GeminiMessage[] = [
-        {
-          id: 'welcome-reset',
-          sender: 'gemini',
-          text: 'HỆ THỐNG ĐÃ LÀM SẠCH VÀ REBOOT THÀNH CÔNG.\n\nĐường truyền an toàn mới đã thiết lập. Nhập câu hỏi để bắt đầu phiên giải mã mới.',
-          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-        }
-      ];
-      setMessages(defaultState);
-      setErrorMsg('');
-    }
+    const defaultState: GeminiMessage[] = [
+      {
+        id: 'welcome-reset',
+        sender: 'gemini',
+        text: 'HỆ THỐNG ĐÃ LÀM SẠCH VÀ REBOOT THÀNH CÔNG.\n\nĐường truyền an toàn mới đã thiết lập. Nhập câu hỏi để bắt đầu phiên giải mã mới.',
+        timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+      }
+    ];
+    setMessages(defaultState);
+    setErrorMsg('');
   };
 
   const quickPrompts = [

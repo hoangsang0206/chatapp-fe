@@ -34,8 +34,11 @@ export interface Story {
   isMine: boolean;
   avatarUrl: string;
   imageUrl?: string;
+  videoUrl?: string;
+  mediaType?: 'image' | 'video';
   caption?: string;
   timestamp?: string;
+  reactionCount?: number;
 }
 
 export interface Notification {
@@ -52,6 +55,7 @@ export interface UserProfile {
   userId: string;
   avatar: string;
   banner: string;
+  email?: string;
 }
 
 export interface FriendRequest {
@@ -59,6 +63,13 @@ export interface FriendRequest {
   name: string;
   subText: string;
   avatar: string;
+}
+
+export interface TodoAttachment {
+  name: string;
+  url: string;
+  type: 'file' | 'image';
+  size?: string;
 }
 
 export interface CalendarTodo {
@@ -69,4 +80,7 @@ export interface CalendarTodo {
   priority: 'low' | 'medium' | 'high';
   time?: string; // e.g. "14:00"
   description?: string;
+  category?: string;
+  tags?: string[];
+  attachments?: TodoAttachment[];
 }

@@ -13,6 +13,7 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
   const [fullName, setFullName] = useState<string>(profile.name);
   const [bio, setBio] = useState<string>(profile.bio);
   const [userId, setUserId] = useState<string>(profile.userId);
+  const [email, setEmail] = useState<string>(profile.email || '');
   const [currentPassword, setCurrentPassword] = useState<string>('********');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
@@ -40,7 +41,8 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
       ...profile,
       name: fullName,
       bio: bio,
-      userId: userId
+      userId: userId,
+      email: email
     });
     triggerToast('CẬP NHẬT TÀI KHOẢN THÀNH CÔNG // ĐỒNG BỘ HOÀN TẤT');
   };
@@ -310,6 +312,17 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
                     type="text" 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none focus:border-neon-green input-glow transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[9px] text-on-surface-variant uppercase font-bold tracking-wider">Địa chỉ Email</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="operator@company.net"
                     className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none focus:border-neon-green input-glow transition-all"
                   />
                 </div>

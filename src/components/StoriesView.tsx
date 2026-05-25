@@ -9,6 +9,7 @@ interface StoriesViewProps {
   setSelectedStoryId: (storyId: string | null) => void;
   onSendMessage: (threadId: string, text: string) => void;
   threads: ChatThread[];
+  onReactStory?: (storyId: string) => void;
 }
 
 export default function StoriesView({
@@ -18,7 +19,8 @@ export default function StoriesView({
   selectedStoryId,
   setSelectedStoryId,
   onSendMessage,
-  threads
+  threads,
+  onReactStory
 }: StoriesViewProps) {
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -27,8 +29,9 @@ export default function StoriesView({
   const [caption, setCaption] = useState<string>('');
   const [toast, setToast] = useState<string | null>(null);
   
-  // Custom uploaded image state before posting
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  // Custom uploaded image/video media state before posting
+  const [previewMedia, setPreviewMedia] = useState<string | null>(null);
+  const [previewMediaType, setPreviewMediaType] = useState<'image' | 'video'>('image');
   
   // Immersive player auto-advance timer ref
   const [playerProgress, setPlayerProgress] = useState<number>(0);
@@ -64,15 +67,16 @@ export default function StoriesView({
 
     // Dynamic tick rate
     const intervalTime = 80; // Total 5000ms divided by 100 is 50ms (or 80ms for 8 seconds)
+    
+    let ticks = 0;
     const timer = setInterval(() => {
-      setPlayerProgress(prev => {
-        if (prev >= 100) {
-          // Time completed, auto advancing
-          handleNextStory();
-          return 0;
-        }
-        return prev + 1;
-      });
+      ticks += 1;
+      if (ticks >= 100) {
+        ticks = 100;
+        handleNextStory();
+      } else {
+        setPlayerProgress(ticks);
+      }
     }, intervalTime);
 
     progressTimerRef.current = timer;
@@ -123,20 +127,25 @@ export default function StoriesView({
   };
 
   const processFile = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      showToast("VUI LÒNG CHỌN TỆP HÌNH ẢNH");
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      showToast("VUI LÒNG CHỌN TỆP HÌNH ẢNH HOẶC VIDEO");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("KÍCH THƯỚC TRÊN 5MB // HỆ THỐNG TỪ CHỐI");
+    
+    const sizeLimit = isVideo ? 100 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > sizeLimit) {
+      showToast(`KÍCH THƯỚC TRÊN ${isVideo ? '100MB' : '15MB'} // HỆ THỐNG TỪ CHỐI`);
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        setPreviewImage(e.target.result as string);
-        showToast("ẢNH ĐÃ ĐƯỢC LOAD VÀO CACHE");
+        setPreviewMedia(e.target.result as string);
+        setPreviewMediaType(isImage ? 'image' : 'video');
+        showToast(isImage ? "ẢNH ĐÃ ĐƯỢC LOAD VÀO CACHE" : "VIDEO ĐÃ ĐƯỢC LOAD VÀO CACHE");
       }
     };
     reader.readAsDataURL(file);
@@ -159,49 +168,66 @@ export default function StoriesView({
 
   // Simulated uploading logic matching user prompt guidelines
   const handlePublishStory = () => {
-    if (!previewImage) {
-      showToast("VUI LÒNG TẢI LÊN ẢNH TRƯỚC");
+    if (!previewMedia) {
+      showToast("VUI LÒNG TẢI LÊN FILE SỨ MỆNH TRƯỚC");
       return;
     }
 
     setIsUploading(true);
     setUploadProgress(0);
 
+    let progress = 0;
     const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            const randomId = `story-mine-${Date.now()}`;
-            const newStoryObj: Story = {
-              id: randomId,
-              sender: profile.name,
-              seed: `user-${Date.now()}`,
-              isMine: true,
-              avatarUrl: profile.avatar,
-              imageUrl: previewImage,
-              caption: caption.trim() || undefined,
-              timestamp: `${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} // CH_MINE`
-            };
+      progress += 25;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          const randomId = `story-mine-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+          const newStoryObj: Story = {
+            id: randomId,
+            sender: profile.name,
+            seed: `user-${Date.now()}`,
+            isMine: true,
+            avatarUrl: profile.avatar,
+            caption: caption.trim() || undefined,
+            timestamp: `${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} // CH_MINE`,
+            mediaType: previewMediaType,
+            reactionCount: 0
+          };
 
-            onAddStory(newStoryObj);
-            setActiveStory(newStoryObj);
-            setSelectedStoryId(randomId);
-            setCaption('');
-            setPreviewImage(null);
-            setIsUploading(false);
-            showToast("ĐĂNG STORY THÀNH CÔNG!");
-          }, 400);
-          return 100;
-        }
-        return prev + 25;
-      });
+          if (previewMediaType === 'video') {
+            newStoryObj.videoUrl = previewMedia;
+          } else {
+            newStoryObj.imageUrl = previewMedia;
+          }
+
+          onAddStory(newStoryObj);
+          setActiveStory(newStoryObj);
+          setSelectedStoryId(randomId);
+          setCaption('');
+          setPreviewMedia(null);
+          setIsUploading(false);
+          showToast("ĐĂNG STORY THÀNH CÔNG!");
+        }, 400);
+      }
+      setUploadProgress(progress);
     }, 150);
   };
 
   // Quick Emoji Feedback which writes message to target chat thread if it exists
   const handleQuickReact = (emoji: string) => {
     if (!activeStory) return;
+    
+    // Update local react count immediately
+    setActiveStory(prev => prev ? {
+      ...prev,
+      reactionCount: (prev.reactionCount || 0) + 1
+    } : null);
+
+    if (onReactStory) {
+      onReactStory(activeStory.id);
+    }
     
     // Find matching thread to send message Or alert 
     const isMine = activeStory.isMine;
@@ -321,7 +347,7 @@ export default function StoriesView({
               className={`border-2 border-dashed rounded-none p-5 text-center cursor-pointer transition-all relative ${
                 dragActive 
                   ? 'border-neon-green bg-neon-green/5' 
-                  : previewImage 
+                  : previewMedia 
                   ? 'border-neon-cyan/50 bg-black/40' 
                   : 'border-border-default hover:border-neon-cyan hover:bg-neon-cyan/5'
               }`}
@@ -330,37 +356,50 @@ export default function StoriesView({
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
-                accept="image/*"
+                accept="image/*,video/*"
                 className="hidden"
               />
 
-              {previewImage ? (
+              {previewMedia ? (
                 <div className="space-y-2.5">
                   <div className="w-full h-24 mx-auto border border-neon-cyan overflow-hidden relative group">
-                    <img src={previewImage} alt="Story upload preview" className="w-full h-full object-cover" />
+                    {previewMediaType === 'video' ? (
+                      <video 
+                        src={previewMedia} 
+                        className="w-full h-full object-cover" 
+                        muted 
+                        loop 
+                        autoPlay 
+                        playsInline
+                      />
+                    ) : (
+                      <img src={previewMedia} alt="Story upload preview" className="w-full h-full object-cover" />
+                    )}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setPreviewImage(null);
+                        setPreviewMedia(null);
                       }}
                       className="absolute inset-0 bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-hot-pink text-[10px] font-bold font-mono tracking-widest cursor-pointer"
                     >
                       HỦY VÀ CHỌN LẠI
                     </button>
                   </div>
-                  <p className="text-[8px] text-[#00ff88] font-mono tracking-wide">ẢNH ĐÃ RÀ SOÁT - SẴN SÀNG TRUYỀN PHÁT</p>
+                  <p className="text-[8px] text-[#00ff88] font-mono tracking-wide">
+                    {previewMediaType === 'video' ? 'VIDEO SLOP' : 'MÔ PHỎNG ẢNH'} SẴN SÀNG TRUYỀN PHÁT
+                  </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-2.5">
                   <span className={`material-symbols-outlined text-3xl mb-1.5 transition-colors ${dragActive ? 'text-neon-green' : 'text-on-surface-variant'}`}>
-                    add_photo_alternate
+                    video_camera_back
                   </span>
                   <p className="text-[10px] font-bold text-white uppercase tracking-wider font-mono">
-                    {dragActive ? "THẢ HÌNH VÀO ĐÂY" : "KÉO THẢ HOẶC CLICK VÀO ĐÂY"}
+                    {dragActive ? "THẢ FILE VÀO ĐÂY" : "KÉO THẢ HOẶC CLICK VÀO ĐÂY"}
                   </p>
                   <p className="text-[8px] text-on-surface-variant/70 font-mono uppercase tracking-tighter mt-1">
-                    HỖ TRỢ JPEG, PNG, WEBP (MAX 5MB)
+                    HỖ TRỢ ẢNH (15MB), VIDEO (100MB)
                   </p>
                 </div>
               )}
@@ -398,9 +437,9 @@ export default function StoriesView({
               <button
                 type="button"
                 onClick={handlePublishStory}
-                disabled={!previewImage}
+                disabled={!previewMedia}
                 className={`w-full py-2.5 border uppercase font-mono text-[9px] font-bold tracking-widest transition-all cursor-pointer ${
-                  previewImage 
+                  previewMedia 
                     ? 'border-neon-green text-neon-green hover:bg-neon-green hover:text-black hover:shadow-[0_0_12px_rgba(0,255,136,0.4)]' 
                     : 'border-border-default/40 text-on-surface-variant/40 cursor-not-allowed bg-transparent'
                 }`}
@@ -480,15 +519,29 @@ export default function StoriesView({
               </div>
             </div>
 
-            {/* STAGE AREA: IMMERSIVE VISUAL PATTERN OR THE UPLOADED PICTURE */}
+            {/* STAGE AREA: IMMERSIVE VISUAL PATTERN OR THE UPLOADED PICTURE/VIDEO */}
             <div className="flex-1 flex items-center justify-center select-none relative bg-[#020203]">
-              {activeStory.imageUrl ? (
+              {activeStory.videoUrl || activeStory.mediaType === 'video' ? (
+                <div className="w-full h-full flex items-center justify-center relative bg-black">
+                  <video 
+                    key={activeStory.id}
+                    src={activeStory.videoUrl} 
+                    className="max-h-full max-w-full object-contain filter brightness-[1.05] contrast-[0.98] outline-none z-10" 
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ) : activeStory.imageUrl ? (
                 <div className="w-full h-full flex items-center justify-center relative bg-black">
                   <img 
                     src={activeStory.imageUrl} 
                     alt={activeStory.sender} 
                     className="max-h-full max-w-full object-contain filter brightness-[1.05] contrast-[0.98]" 
-                    referrerPolicy="referrer"
+                    referrerPolicy="no-referrer"
                   />
                 </div>
               ) : (
@@ -533,7 +586,9 @@ export default function StoriesView({
               
               {/* Quick Emojis Grid panel */}
               <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 custom-scrollbar justify-center md:justify-start">
-                <span className="text-[8px] text-on-surface-variant font-mono font-bold uppercase tracking-wider hidden sm:inline">PHẢN HỒI:</span>
+                <span className="text-[8px] text-on-surface-variant font-mono font-bold uppercase tracking-wider hidden sm:inline">
+                  PHẢN HỒI ({activeStory.reactionCount || 0}):
+                </span>
                 {['⚡', '🧬', '🛡', '🔥', '💀', '👽', '🖤'].map((emoji) => (
                   <button
                     key={emoji}
