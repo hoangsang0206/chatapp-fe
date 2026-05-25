@@ -23,6 +23,15 @@ export default function ChatView({
   const [timestamp, setTimestamp] = useState<string>('TIMESTAMP: 2077.08.12 // 04:32:01');
   const [showInfoPanel, setShowInfoPanel] = useState<boolean>(false);
   const [pingStatus, setPingStatus] = useState<string | null>(null);
+  const [mobileActiveView, setMobileActiveView] = useState<'list' | 'chat'>('list');
+  const prevThreadIdRef = useRef<string>(activeThreadId);
+
+  useEffect(() => {
+    if (activeThreadId !== prevThreadIdRef.current) {
+      setMobileActiveView('chat');
+      prevThreadIdRef.current = activeThreadId;
+    }
+  }, [activeThreadId]);
 
   // States required by the user
   const [isMuted, setIsMuted] = useState<{ [threadId: string]: boolean }>({});
@@ -247,9 +256,9 @@ export default function ChatView({
   };
 
   return (
-    <div id="chat-view-container" className="flex h-[calc(100vh-140px)] border border-border-default bg-surface-dim overflow-hidden animate-fade-in">
+    <div id="chat-view-container" className="flex h-[calc(100vh-140px)] border border-border-default bg-surface-dim overflow-hidden animate-fade-in relative">
       {/* List Sidebar of Direct & Group chats */}
-      <section id="chat-sidebar" className="w-64 md:w-72 border-r border-border-default flex flex-col bg-surface-container-lowest/80">
+      <section id="chat-sidebar" className={`${mobileActiveView === 'list' ? 'flex w-full' : 'hidden md:flex'} md:w-72 border-r border-border-default flex-col bg-surface-container-lowest/80`}>
         <div className="p-4 border-b border-border-default flex items-center justify-between bg-surface-container-low/60">
           <span className="font-mono text-[9px] text-neon-cyan tracking-widest uppercase font-bold truncate">
             {timestamp}
@@ -266,7 +275,10 @@ export default function ChatView({
               <div 
                 key={thread.id} 
                 id={`sidebar-row-${thread.id}`}
-                onClick={() => onSelectThread(thread.id)}
+                onClick={() => {
+                  onSelectThread(thread.id);
+                  setMobileActiveView('chat');
+                }}
                 className={`p-4 border-b border-border-default/30 hover:bg-surface-container-high/60 transition-all cursor-pointer group relative ${
                   isActive 
                     ? 'bg-surface-container-high border-l-2 border-neon-cyan shadow-[inset_4px_0_0_rgba(0,212,255,0.2)]' 
@@ -321,10 +333,20 @@ export default function ChatView({
       </section>
 
       {/* Main Conversation Window */}
-      <section id="conversation-window" className="flex-1 flex flex-col bg-background relative">
+      <section id="conversation-window" className={`${mobileActiveView === 'chat' ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-background relative`}>
         {/* Active Header bar of conversation */}
-        <header className="flex items-center justify-between px-6 h-16 border-b border-border-default bg-surface-dim/95 backdrop-blur-md">
+        <header className="flex items-center justify-between px-4 sm:px-6 h-16 border-b border-border-default bg-surface-dim/95 backdrop-blur-md">
           <div className="flex items-center gap-3">
+            {/* Mobile Back Button */}
+            <button 
+              type="button"
+              onClick={() => setMobileActiveView('list')}
+              className="md:hidden flex items-center justify-center w-8 h-8 mr-1 text-neon-cyan hover:text-white border border-neon-cyan/30 bg-neon-cyan/5 hover:bg-neon-cyan/20 cursor-pointer"
+              title="Quay lại danh sách"
+            >
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+            </button>
+
             <div className="w-10 h-10 border-2 border-neon-cyan overflow-hidden">
               <img 
                 src={activeThread?.avatar} 
@@ -470,7 +492,7 @@ export default function ChatView({
 
       {/* Info Metadata panel */}
       {showInfoPanel && (
-        <aside id="chat-info-panel" className="w-72 md:w-80 border-l border-border-default bg-surface-container-lowest/95 flex flex-col p-5 font-mono text-xs overflow-y-auto custom-scrollbar animate-fade-in relative z-20">
+        <aside id="chat-info-panel" className="absolute md:static right-0 top-0 bottom-0 z-30 w-full sm:w-80 md:w-80 border-l border-border-default bg-surface-container-lowest/95 flex flex-col p-5 font-mono text-xs overflow-y-auto custom-scrollbar animate-fade-in">
           <div className="flex items-center justify-between border-b border-border-default pb-3.5 mb-4">
             <h3 className="text-neon-cyan font-bold uppercase tracking-wider text-[11px]">THÔNG TIN CUỘC TRÒ CHUYỆN</h3>
             <button 

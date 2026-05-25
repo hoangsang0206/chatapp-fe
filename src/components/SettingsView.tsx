@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserProfile } from '../types';
 
 interface SettingsViewProps {
@@ -7,11 +7,15 @@ interface SettingsViewProps {
 }
 
 export default function SettingsView({ profile, onUpdateProfile }: SettingsViewProps) {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
   const [fullName, setFullName] = useState<string>(profile.name);
   const [bio, setBio] = useState<string>(profile.bio);
   const [userId, setUserId] = useState<string>(profile.userId);
   const [currentPassword, setCurrentPassword] = useState<string>('********');
   const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
   const [mfa, setMfa] = useState<boolean>(true);
   const [terminalSound, setTerminalSound] = useState<boolean>(true);
   const [desktopNotif, setDesktopNotif] = useState<boolean>(false);
@@ -43,8 +47,13 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
 
   const handleUpdateSecurity = (e: React.FormEvent) => {
     e.preventDefault();
+    if (newPassword && newPassword !== confirmNewPassword) {
+      triggerToast('MẬT KHẨU XÁC NHẬN KHÔNG TRÙNG KHỚP // LỖI XÁC THỰC');
+      return;
+    }
     triggerToast('ĐÃ THAY ĐỔI CẤU HÌNH BẢO MẬT // KHÓA ĐẦU RA AN TOÀN');
     setNewPassword('');
+    setConfirmNewPassword('');
   };
 
   const handleDisconnectDevice = (id: string, name: string) => {
@@ -73,8 +82,68 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
     triggerToast('ĐÃ ĐỒI BANNER HÌNH NỀN HỆ THỐNG');
   };
 
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        triggerToast('TẬP TIN QUÁ LỚN // GIỚI HẠN DƯỚI 3MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onUpdateProfile({
+            ...profile,
+            avatar: event.target.result as string,
+          });
+          triggerToast('ĐÃ CẬP NHẬT ẢNH ĐẠI DIỆN THIẾT BỊ');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        triggerToast('TẬP TIN QUÁ LỚN // GIỚI HẠN DƯỚI 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onUpdateProfile({
+            ...profile,
+            banner: event.target.result as string,
+          });
+          triggerToast('ĐÃ CẬP NHẬT BANNER HÌNH NỀN HỆ THỐNG');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div id="settings-view-scroller" className="h-[calc(100vh-140px)] overflow-y-auto p-6 md:p-8 custom-scrollbar relative bg-surface-dim/30">
+      {/* Hidden Files Inputs */}
+      <input 
+        type="file" 
+        ref={avatarInputRef} 
+        onChange={handleAvatarFileChange} 
+        accept="image/*" 
+        className="hidden" 
+        id="avatar-upload-file-input"
+      />
+      <input 
+        type="file" 
+        ref={bannerInputRef} 
+        onChange={handleBannerFileChange} 
+        accept="image/*" 
+        className="hidden" 
+        id="banner-upload-file-input"
+      />
+
       {/* Toast alert overlay */}
       {toastMessage && (
         <div className="fixed top-20 right-6 bg-[#0E0E13] border-2 border-neon-green text-neon-green px-5 py-3 font-mono text-xs uppercase shadow-[0_0_20px_rgba(0,255,136,0.5)] z-[110] animate-bounce">
@@ -108,12 +177,25 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
               referrerPolicy="no-referrer"
             />
             <div 
-              onClick={changeBannerSeed}
-              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm cursor-pointer"
+              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-[2px]"
             >
-              <div className="flex flex-col items-center gap-1">
-                <span className="material-symbols-outlined text-neon-cyan text-3xl">add_a_photo</span>
-                <span className="font-mono text-[9px] text-neon-cyan uppercase tracking-widest">ĐỔI BANNER (RANDOM)</span>
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => bannerInputRef.current?.click()}
+                  className="flex items-center gap-2 border border-neon-cyan bg-neon-cyan/10 hover:bg-neon-cyan/25 text-neon-cyan text-[10px] font-bold tracking-widest px-4 py-2 uppercase font-mono transition-all cursor-pointer shadow-[0_0_8px_rgba(0,212,255,0.2)]"
+                >
+                  <span className="material-symbols-outlined text-sm">upload_file</span>
+                  Tải lên ảnh bìa
+                </button>
+                <button
+                  type="button"
+                  onClick={changeBannerSeed}
+                  className="flex items-center gap-2 border border-white/40 bg-white/5 hover:bg-white/15 text-white text-[10px] font-bold tracking-widest px-4 py-2 uppercase font-mono transition-all cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm">casino</span>
+                  Tạo ngẫu nhiên
+                </button>
               </div>
             </div>
             <div className="scanline"></div>
@@ -129,10 +211,28 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
                 referrerPolicy="no-referrer"
               />
               <div 
-                onClick={changeAvatarSeed}
-                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 cursor-pointer"
+                className="absolute inset-0 flex flex-col gap-1.5 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/80"
               >
-                <span className="material-symbols-outlined text-neon-green text-2xl">photo_camera</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    avatarInputRef.current?.click();
+                  }}
+                  className="w-full py-1 text-center font-mono text-[8.5px] font-bold text-neon-green hover:bg-neon-green/10 transition-colors border-b border-white/10 uppercase cursor-pointer"
+                >
+                  Tải ảnh lên
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    changeAvatarSeed();
+                  }}
+                  className="w-full py-1 text-center font-mono text-[8.5px] font-bold text-white hover:bg-white/10 transition-colors uppercase cursor-pointer"
+                >
+                  Random Seed
+                </button>
               </div>
             </div>
           </div>
@@ -152,6 +252,48 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
               </div>
 
               <form onSubmit={handleUpdateAccount} className="space-y-4">
+                
+                {/* Media Upload Buttons Panel */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4 border-b border-border-default/40">
+                  <div className="bg-black/30 border border-border-default/30 p-2.5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 border border-neon-green/60 overflow-hidden flex-shrink-0 bg-black">
+                        <img src={profile.avatar} alt="Min avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] text-white font-bold font-mono uppercase truncate">ẢNH ĐẠI DIỆN</p>
+                        <p className="text-[7.5px] text-on-surface-variant font-mono uppercase truncate">User avatar</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="text-[8.5px] font-bold text-neon-green border border-neon-green/30 px-2 py-1.5 hover:bg-neon-green hover:text-black transition-all uppercase cursor-pointer shrink-0 font-mono"
+                    >
+                      TẢI LÊN
+                    </button>
+                  </div>
+
+                  <div className="bg-black/30 border border-border-default/30 p-2.5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-11 h-8 border border-neon-cyan/60 overflow-hidden flex-shrink-0 bg-black">
+                        <img src={profile.banner} alt="Min banner" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] text-white font-bold font-mono uppercase truncate">ẢNH BÌA BG</p>
+                        <p className="text-[7.5px] text-on-surface-variant font-mono uppercase truncate">System Banner</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => bannerInputRef.current?.click()}
+                      className="text-[8.5px] font-bold text-neon-cyan border border-neon-cyan/30 px-2 py-1.5 hover:bg-neon-cyan hover:text-black transition-all uppercase cursor-pointer shrink-0 font-mono"
+                    >
+                      TẢI LÊN
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="block text-[9px] text-on-surface-variant uppercase font-bold tracking-wider">MÃ TÀI KHOẢN (USER_ID)</label>
                   <input 
@@ -201,16 +343,17 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
               </div>
 
               <form onSubmit={handleUpdateSecurity} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-[9px] text-on-surface-variant uppercase font-bold">Mật khẩu hiện tại</label>
+                  <input 
+                    type="password" 
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none focus:border-neon-green" 
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="block text-[9px] text-on-surface-variant uppercase font-bold">Mật khẩu hiện tại</label>
-                    <input 
-                      type="password" 
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none" 
-                    />
-                  </div>
                   <div className="space-y-1">
                     <label className="block text-[9px] text-on-surface-variant uppercase font-bold">Mật khẩu mới</label>
                     <input 
@@ -218,6 +361,16 @@ export default function SettingsView({ profile, onUpdateProfile }: SettingsViewP
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="MÃ MỚI AN TOÀN"
+                      className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none focus:border-neon-green" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[9px] text-on-surface-variant uppercase font-bold">Xác nhận mật khẩu mới</label>
+                    <input 
+                      type="password" 
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="XÁC NHẬN MẬT KHẨU"
                       className="w-full bg-black border border-border-default p-3 font-mono text-xs text-white outline-none focus:border-neon-green" 
                     />
                   </div>

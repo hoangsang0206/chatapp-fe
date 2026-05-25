@@ -293,10 +293,17 @@ export default function App() {
           <button 
             id="sidebar-profile-btn"
             onClick={() => { setShowProfileCard(!showProfileCard); setShowNotifications(false); }}
-            className="text-on-surface-variant/75 flex flex-col items-center py-4 hover:text-hot-pink transition-all cursor-pointer outline-none"
+            className="text-on-surface-variant/75 flex flex-col items-center py-4 hover:text-hot-pink transition-all cursor-pointer outline-none group"
           >
-            <span className="material-symbols-outlined text-2xl font-semibold">account_circle</span>
-            <span className="text-[8px] mt-1 uppercase font-bold">Profile</span>
+            <div className="w-8 h-8 border border-on-surface-variant/40 group-hover:border-hot-pink overflow-hidden bg-black/40 transition-all duration-300">
+              <img 
+                src={profile.avatar} 
+                alt="Profile Avatar" 
+                className="w-full h-full object-cover" 
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <span className="text-[8px] mt-1.5 uppercase font-bold">Profile</span>
           </button>
         </div>
       </aside>
