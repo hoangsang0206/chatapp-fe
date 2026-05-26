@@ -77,6 +77,7 @@ export default function App() {
   // UI Dialog/Popup states
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [showProfileCard, setShowProfileCard] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // Actions
   const handleSelectThread = (threadId: string) => {
@@ -315,8 +316,16 @@ export default function App() {
 
   return (
     <div id="app-root-container" className="selection:bg-neon-green selection:text-black grid-bg min-h-screen relative overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
-      <aside id="main-navigation-sidebar" className="fixed left-0 top-0 h-full flex flex-col items-center py-4 bg-surface-container-lowest border-r border-[#2A2A3A] w-16 md:w-20 z-50">
+      <aside id="main-navigation-sidebar" className={`fixed left-0 top-0 h-full flex flex-col items-center py-4 bg-surface-container-lowest border-r border-[#2A2A3A] w-16 md:w-20 z-50 transform transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="mb-8" id="sidebar-logo-container">
           <img 
             alt="CYBER_HUB Logo" 
@@ -329,8 +338,8 @@ export default function App() {
           {/* Home Active Tab */}
           <button 
             id="tab-btn-home"
-            onClick={() => { setActiveTab('home'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('home'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'home' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -343,8 +352,8 @@ export default function App() {
           {/* Chat Inactive Tab */}
           <button 
             id="tab-btn-chat"
-            onClick={() => { setActiveTab('chat'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('chat'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'chat' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -357,8 +366,8 @@ export default function App() {
           {/* Contacts Inactive Tab */}
           <button 
             id="tab-btn-contacts"
-            onClick={() => { setActiveTab('contacts'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('contacts'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'contacts' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -371,8 +380,8 @@ export default function App() {
           {/* Stories Tab */}
           <button 
             id="tab-btn-stories"
-            onClick={() => { setActiveTab('stories'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('stories'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'stories' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -385,8 +394,8 @@ export default function App() {
           {/* Calendar Tab */}
           <button 
             id="tab-btn-calendar"
-            onClick={() => { setActiveTab('calendar'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('calendar'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'calendar' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -399,8 +408,8 @@ export default function App() {
           {/* Gemini AI / Assistant Tab */}
           <button 
             id="tab-btn-gemini"
-            onClick={() => { setActiveTab('gemini'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('gemini'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'gemini' 
                 ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_rgba(0,212,255,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -413,8 +422,8 @@ export default function App() {
           {/* Settings Tab */}
           <button 
             id="tab-btn-settings"
-            onClick={() => { setActiveTab('settings'); setShowNotifications(false); }}
-            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none ${
+            onClick={() => { setActiveTab('settings'); setShowNotifications(false); setIsSidebarOpen(false); }}
+            className={`flex flex-col items-center py-4 transition-all duration-300 border-l-4 cursor-pointer outline-none w-full ${
               activeTab === 'settings' 
                 ? 'border-neon-green bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,136,0.3)]' 
                 : 'text-on-surface-variant/70 border-transparent hover:text-neon-cyan hover:bg-surface-container-high/40'
@@ -446,13 +455,19 @@ export default function App() {
       </aside>
 
       {/* Top Application Bar */}
-      <header id="main-application-header" className="fixed top-0 left-16 md:left-20 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-[#2A2A3A] flex items-center justify-between px-6 z-40">
-        <div className="flex items-center gap-4" id="header-brand-box">
+      <header id="main-application-header" className="fixed top-0 left-0 md:left-20 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-[#2A2A3A] flex items-center justify-between px-4 md:px-6 z-30">
+        <div className="flex items-center gap-3 md:gap-4" id="header-brand-box">
+          <button 
+            className="md:hidden p-1.5 text-on-surface-variant hover:text-neon-cyan transition-colors" 
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
           <h1 className="text-lg font-black text-terminal-magenta uppercase tracking-tighter cursor-pointer" onClick={() => setActiveTab('home')}>
              CYBER CHAT
           </h1>
-          <div className="h-4 w-px bg-[#2A2A3A]"></div>
-          <nav className="hidden md:flex gap-6 font-mono text-xs font-semibold" id="header-direct-nav">
+          <div className="hidden md:block h-4 w-px bg-[#2A2A3A]"></div>
+          <nav className="hidden lg:flex gap-6 font-mono text-xs font-semibold overflow-x-auto custom-scrollbar pr-4 py-2" id="header-direct-nav">
             <button 
               onClick={() => { setActiveTab('home'); setShowNotifications(false); }} 
               className={`pb-1 transition-all ${activeTab === 'home' ? 'text-neon-cyan border-b-2 border-neon-cyan' : 'text-on-surface-variant hover:text-hot-pink'}`}
@@ -611,7 +626,7 @@ export default function App() {
       )}
 
       {/* Main Content Render Layout Router */}
-      <main id="router-content-viewport" className="ml-16 md:ml-20 mt-16 p-6 min-h-[calc(100vh-64px)] relative block">
+      <main id="router-content-viewport" className="ml-0 md:ml-20 mt-16 p-4 md:p-6 min-h-[calc(100vh-64px)] relative block w-full max-w-full overflow-hidden">
         {activeTab === 'home' && (
           <HomeView 
             stories={stories}
