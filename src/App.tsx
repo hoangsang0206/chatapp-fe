@@ -291,14 +291,14 @@ export default function App() {
     setActiveTab('chat');
   };
 
-  const handleLogin = (name: string) => {
-    setProfile(prev => ({ ...prev, name }));
+  const handleLogin = (email: string) => {
+    setProfile(prev => ({ ...prev, email }));
     setIsAuthenticated(true);
     localStorage.setItem('cyber_auth_token', 'true');
   };
 
-  const handleRegister = (name: string, email: string) => {
-    setProfile(prev => ({ ...prev, name, email }));
+  const handleRegister = (name: string, email: string, userId: string, avatar: string, cover: string) => {
+    setProfile(prev => ({ ...prev, name, email, userId, avatar, banner: cover }));
     setIsAuthenticated(true);
     localStorage.setItem('cyber_auth_token', 'true');
   };

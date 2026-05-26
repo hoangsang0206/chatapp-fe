@@ -59,7 +59,11 @@ export default function ContactsView({
   // Filter contacts by search query
   const filteredContacts = contacts.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.status.toLowerCase().includes(searchTerm.toLowerCase())
+    c.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredGroupThreads = groupThreads.filter((g) =>
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddNewFriend = (e: React.FormEvent) => {
@@ -210,7 +214,7 @@ export default function ContactsView({
         <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between border-b border-border-default/80 pb-2.5">
             <h2 className="text-neon-cyan font-bold text-xs tracking-widest uppercase">
-              DANH SÁCH NHÓM CỘNG ĐỒNG ({groupThreads.length})
+              DANH SÁCH NHÓM CỘNG ĐỒNG ({filteredGroupThreads.length})
             </h2>
             <div className="flex items-center gap-3">
               <button 
@@ -339,7 +343,12 @@ export default function ContactsView({
           )}
 
           <div id="groups-grid" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {groupThreads.map((group) => {
+            {filteredGroupThreads.length === 0 && (
+              <div className="col-span-1 sm:col-span-3 text-center sm:text-left text-[10px] text-on-surface-variant/50 border border-dashed border-border-default/50 p-4">
+                Không tìm thấy nhóm "{searchTerm}"
+              </div>
+            )}
+            {filteredGroupThreads.map((group) => {
               // Custom displays for fallback metrics
               const memberCount = group.id === 'g1' ? 12 : group.id === 'g2' ? 5 : group.id === 'g3' ? 82 : (group.initialMembers?.length || 0) + 1;
               const onlineCount = group.id === 'g1' ? 3 : group.id === 'g2' ? 5 : group.id === 'g3' ? 14 : 1;
